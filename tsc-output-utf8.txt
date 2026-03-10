@@ -1,1 +1,0 @@
-﻿src/lib/db.ts(1,10): error TS2305: Module '"@prisma/client"' has no exported member 'PrismaClient'.
