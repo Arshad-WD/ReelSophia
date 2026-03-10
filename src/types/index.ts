@@ -20,6 +20,7 @@ export interface ProcessingJobData {
     userId: string;
     sourceUrl: string;
     platform: string;
+    openRouterKey?: string;
 }
 
 export interface ReelWithJob {

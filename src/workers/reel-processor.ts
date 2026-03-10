@@ -11,6 +11,9 @@
  * 7. Save structured knowledge to DB
  */
 
+import fs from "fs/promises";
+import path from "path";
+import os from "os";
 import { Worker, Job } from "bullmq";
 import { db } from "@/lib/db";
 import { redis } from "@/lib/redis";
@@ -51,25 +54,44 @@ async function updateJobStatus(
 }
 
 async function processReel(job: Job<ProcessingJobData>) {
-    const { reelId, sourceUrl, platform } = job.data;
+    const { reelId, sourceUrl, platform, openRouterKey } = job.data;
+
+    // Create temporary directory for this specific job
+    const tempDir = path.join(os.tmpdir(), "reelsophia", reelId);
 
     try {
+        await fs.mkdir(tempDir, { recursive: true });
+        const videoPath = path.join(tempDir, "video.mp4");
+        const audioPath = path.join(tempDir, "audio.wav");
+
         // Stage 1: Download video
         await updateJobStatus(reelId, "DOWNLOADING", 10);
+
         // TODO: Implement actual video download with yt-dlp
-        // For now we simulate this step
-        console.log(`[Worker] Downloading ${platform} video: ${sourceUrl}`);
+        console.log(`[Worker] Downloading ${platform} video: ${sourceUrl} to ${videoPath}`);
         await new Promise((r) => setTimeout(r, 1000));
+
+        // TODO: Validate video size and length after getting metadata
+        // Example logic:
+        // const metadata = await getVideoMetadata(sourceUrl);
+        // if (metadata.duration > 120) throw new Error("Video exceeds maximum length of 120 seconds");
+        // if (metadata.filesize > 20 * 1024 * 1024) throw new Error("Video exceeds maximum size of 20 MB");
+
+        // Simulate created temp file for video
+        await fs.writeFile(videoPath, "dummy video data");
 
         // Stage 2: Extract audio
         await updateJobStatus(reelId, "EXTRACTING", 25);
         // TODO: Implement ffmpeg audio extraction
-        console.log(`[Worker] Extracting audio for reel ${reelId}`);
+        console.log(`[Worker] Extracting audio for reel ${reelId} to ${audioPath}`);
         await new Promise((r) => setTimeout(r, 1000));
+
+        // Simulate created temp file for audio
+        await fs.writeFile(audioPath, "dummy audio data");
 
         // Stage 3: Speech-to-text
         await updateJobStatus(reelId, "TRANSCRIBING", 40);
-        // TODO: Implement actual STT (Whisper via OpenRouter or Deepgram)
+        // TODO: Implement actual STT reading from audioPath
         const rawTranscript = `This is a placeholder transcript for the reel from ${sourceUrl}. 
     In a production environment, this would be the actual speech-to-text output 
     from the audio extracted from the video. The transcript would contain the 
@@ -102,7 +124,7 @@ async function processReel(job: Job<ProcessingJobData>) {
         if (chunks.length <= 1) {
             // Short transcript — single-pass extraction (1 AI call)
             console.log(`[Worker] Single-pass extraction for reel ${reelId}`);
-            knowledge = await extractKnowledgeSinglePass(cleaned);
+            knowledge = await extractKnowledgeSinglePass(cleaned, openRouterKey);
         } else {
             // Long transcript — chunk-based extraction (N+1 AI calls)
             console.log(
@@ -110,13 +132,13 @@ async function processReel(job: Job<ProcessingJobData>) {
             );
             const chunkSummaries: ChunkSummary[] = [];
             for (let i = 0; i < chunks.length; i++) {
-                const summary = await summarizeChunk(chunks[i], i, chunks.length);
+                const summary = await summarizeChunk(chunks[i], i, chunks.length, openRouterKey);
                 chunkSummaries.push(summary);
                 const chunkProgress = 70 + Math.round((i / chunks.length) * 20);
                 await updateJobStatus(reelId, "SUMMARIZING", chunkProgress);
             }
 
-            knowledge = await extractStructuredKnowledge(chunkSummaries, cleaned);
+            knowledge = await extractStructuredKnowledge(chunkSummaries, cleaned, openRouterKey);
         }
 
         // Stage 6: Save structured knowledge to DB
@@ -147,13 +169,22 @@ async function processReel(job: Job<ProcessingJobData>) {
             error instanceof Error ? error.message : "Unknown error";
         await updateJobStatus(reelId, "FAILED", 0, errorMessage);
         throw error; // Let BullMQ handle retries
+    } finally {
+        // Stage 7: Cleanup Temporary Files
+        try {
+            console.log(`[Worker] Cleaning up temporary files at ${tempDir}`);
+            await fs.rm(tempDir, { recursive: true, force: true });
+        } catch (cleanupError) {
+            console.error(`[Worker] ⚠️ Failed to clean up temp directory ${tempDir}:`, cleanupError);
+        }
     }
 }
 
 // Create and start the worker
 export function startWorker() {
     const worker = new Worker<ProcessingJobData>(QUEUE_NAME, processReel, {
-        connection: redis,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        connection: redis as any,
         concurrency: 2,
         limiter: {
             max: 5,

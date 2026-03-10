@@ -9,7 +9,8 @@ let queue: Queue<ProcessingJobData> | null = null;
 export function getQueue(): Queue<ProcessingJobData> {
     if (!queue) {
         queue = new Queue<ProcessingJobData>(QUEUE_NAME, {
-            connection: redis,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            connection: redis as any,
             defaultJobOptions: {
                 attempts: 3,
                 backoff: {

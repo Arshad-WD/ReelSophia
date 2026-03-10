@@ -10,11 +10,12 @@ const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 async function callOpenRouter(
     messages: { role: string; content: string }[],
-    maxTokens: number = 1000
+    maxTokens: number = 1000,
+    customApiKey?: string
 ): Promise<string> {
-    const apiKey = process.env.OPENROUTER_API_KEY;
+    const apiKey = customApiKey || process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
-        throw new Error("OPENROUTER_API_KEY is not configured");
+        throw new Error("OPENROUTER_API_KEY is not configured and no custom key provided");
     }
 
     const response = await fetch(OPENROUTER_API_URL, {
@@ -50,7 +51,8 @@ async function callOpenRouter(
 export async function summarizeChunk(
     chunk: string,
     chunkIndex: number,
-    totalChunks: number
+    totalChunks: number,
+    customApiKey?: string
 ): Promise<ChunkSummary> {
     const systemPrompt = `You are a knowledge extraction assistant. Extract the key information from this transcript chunk.
 
@@ -73,7 +75,8 @@ Be concise. Each item should be one sentence max.`;
             { role: "system", content: systemPrompt },
             { role: "user", content: chunk },
         ],
-        500
+        500,
+        customApiKey
     );
 
     try {
@@ -89,7 +92,8 @@ Be concise. Each item should be one sentence max.`;
  */
 export async function extractStructuredKnowledge(
     chunkSummaries: ChunkSummary[],
-    originalTranscriptPreview: string
+    originalTranscriptPreview: string,
+    customApiKey?: string
 ): Promise<StructuredKnowledge> {
     // Merge all chunk summaries into a compact input
     const mergedInput = chunkSummaries
@@ -133,7 +137,8 @@ Rules:
             { role: "system", content: systemPrompt },
             { role: "user", content: userMessage },
         ],
-        800
+        800,
+        customApiKey
     );
 
     try {
@@ -157,7 +162,8 @@ Rules:
  * Uses only one AI call instead of chunk + merge.
  */
 export async function extractKnowledgeSinglePass(
-    cleanedTranscript: string
+    cleanedTranscript: string,
+    customApiKey?: string
 ): Promise<StructuredKnowledge> {
     const systemPrompt = `You are a knowledge extraction assistant. Convert this video transcript into structured learning content.
 
@@ -179,7 +185,8 @@ Respond with valid JSON only:
             { role: "system", content: systemPrompt },
             { role: "user", content: cleanedTranscript },
         ],
-        800
+        800,
+        customApiKey
     );
 
     try {

@@ -18,6 +18,17 @@ export async function POST(req: NextRequest) {
         const url = sanitize(body.url?.trim() || "");
         const folderId = body.folderId || null;
 
+        // Wait, Clerk user ID is passed. Let's sync user from DB first to get their openRouterKey
+        let userDb = await db.user.findUnique({
+            where: { id: userId },
+        });
+
+        if (!userDb) {
+            userDb = await db.user.create({
+                data: { id: userId, email: "" },
+            });
+        }
+
         // Validate URL
         const validation = validateReelUrl(url);
         if (!validation.valid) {
@@ -27,17 +38,19 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Rate limit check
-        const rateCheck = checkRateLimit(userId);
-        if (!rateCheck.allowed) {
-            const retryMinutes = Math.ceil((rateCheck.retryAfterMs || 0) / 60000);
-            return NextResponse.json(
-                {
-                    error: `Rate limit exceeded. Try again in ${retryMinutes} minutes.`,
-                    retryAfterMs: rateCheck.retryAfterMs,
-                },
-                { status: 429 }
-            );
+        // Rate limit check - Bypass if custom key exists
+        if (!userDb.openRouterKey) {
+            const rateCheck = checkRateLimit(userId);
+            if (!rateCheck.allowed) {
+                const retryMinutes = Math.ceil((rateCheck.retryAfterMs || 0) / 60000);
+                return NextResponse.json(
+                    {
+                        error: `Rate limit exceeded. Try again in ${retryMinutes} minutes.`,
+                        retryAfterMs: rateCheck.retryAfterMs,
+                    },
+                    { status: 429 }
+                );
+            }
         }
 
         // Duplicate detection — check if URL already processed by this user
@@ -65,13 +78,6 @@ export async function POST(req: NextRequest) {
                 { status: 200 }
             );
         }
-
-        // Ensure user exists in DB (sync from Clerk)
-        await db.user.upsert({
-            where: { id: userId },
-            update: {},
-            create: { id: userId, email: "" },
-        });
 
         // Validate folder belongs to user if provided
         if (folderId) {
@@ -113,6 +119,7 @@ export async function POST(req: NextRequest) {
                 userId,
                 sourceUrl: url,
                 platform: validation.platform!,
+                openRouterKey: userDb.openRouterKey || undefined,
             });
         } catch (queueError) {
             console.warn("Queue unavailable, job saved to DB:", queueError);
