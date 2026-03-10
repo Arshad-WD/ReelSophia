@@ -1,0 +1,96 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id // Clerk user ID
+  email     String   @unique
+  name      String?
+  imageUrl  String?  @map("image_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  folders Folder[]
+  reels   Reel[]
+
+  @@map("users")
+}
+
+model Folder {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  name      String
+  icon      String?  @default("📁")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reels Reel[]
+
+  @@index([userId])
+  @@map("folders")
+}
+
+model Reel {
+  id             String     @id @default(cuid())
+  userId         String     @map("user_id")
+  folderId       String?    @map("folder_id")
+  sourceUrl      String     @map("source_url")
+  platform       String // instagram | tiktok | youtube
+  title          String?
+  transcript     String?
+  cleanTranscript String?   @map("clean_transcript")
+  summary        String?
+  mainIdea       String?    @map("main_idea")
+  keyPoints      String[]   @map("key_points")
+  actionableTips String[]   @map("actionable_tips")
+  toolsConcepts  String[]   @map("tools_concepts")
+  shortExplanation String?  @map("short_explanation")
+  detailedNotes  String?    @map("detailed_notes")
+  tags           String[]
+  status         ReelStatus @default(PENDING)
+  videoDuration  Int?       @map("video_duration") // seconds
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folder Folder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  job    ProcessingJob?
+
+  @@unique([userId, sourceUrl]) // duplicate detection
+  @@index([userId])
+  @@index([folderId])
+  @@index([status])
+  @@map("reels")
+}
+
+enum ReelStatus {
+  PENDING
+  DOWNLOADING
+  EXTRACTING
+  TRANSCRIBING
+  CLEANING
+  SUMMARIZING
+  COMPLETED
+  FAILED
+}
+
+model ProcessingJob {
+  id        String     @id @default(cuid())
+  reelId    String     @unique @map("reel_id")
+  status    ReelStatus @default(PENDING)
+  error     String?
+  progress  Int        @default(0) // 0-100
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  reel Reel @relation(fields: [reelId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@map("processing_jobs")
+}
