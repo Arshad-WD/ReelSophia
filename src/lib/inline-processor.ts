@@ -19,13 +19,8 @@ import {
     chunkTranscript,
     getTranscriptStats,
 } from "@/lib/transcript-cleaner";
-import {
-    summarizeChunk,
-    extractStructuredKnowledge,
-    extractKnowledgeSinglePass,
-    suggestCategory,
-} from "@/lib/openrouter";
-import type { ChunkSummary } from "@/types";
+import { summarizeChunk, extractStructuredKnowledge, extractKnowledgeSinglePass, suggestCategory } from "@/lib/openrouter";
+import type { ChunkSummary, AISettings } from "@/types";
 
 const execAsync = promisify(exec);
 const MAX_CHUNK_WORDS = 300;
@@ -64,9 +59,10 @@ export async function processReelInline(data: {
     userId: string;
     sourceUrl: string;
     platform: string;
-    openRouterKey?: string;
+    aiSettings?: AISettings;
 }) {
-    const { reelId, userId, sourceUrl, platform, openRouterKey } = data;
+    const { reelId, userId, sourceUrl, platform, aiSettings } = data;
+    const openRouterKey = aiSettings?.keys?.openrouter;
     const tempDir = path.join(os.tmpdir(), "reelsophia", reelId);
 
     try {
@@ -102,19 +98,20 @@ export async function processReelInline(data: {
                 
                 // Let's implement an alternative publicly available free API route:
                 // SSSGram / SnapInsta APIs (often wrapped implicitly by 'social-media-video-downloader')
+                const reqOptions: RequestInit = rapidApiKey ? {
+                    method: 'GET',
+                    headers: {
+                        'x-rapidapi-host': 'instagram-downloader-download-instagram-videos-stories.p.rapidapi.com',
+                        'x-rapidapi-key': rapidApiKey
+                    }
+                } : {
+                    method: 'GET'
+                };
+
                 try {
                     // Try the 'insta-video-downloader' API via rapidapi if key exists, 
                     // OR a free proxy endpoint that doesn't need a key
                     
-                    const reqOptions: RequestInit = rapidApiKey ? {
-                        method: 'GET',
-                        headers: {
-                            'x-rapidapi-host': 'instagram-downloader-download-instagram-videos-stories.p.rapidapi.com',
-                            'x-rapidapi-key': rapidApiKey
-                        }
-                    } : {
-                        method: 'GET'
-                    };
                     
                     // Fallback to a free public worker API if no RapidAPI key
                     const apiUrl = rapidApiKey 
@@ -158,6 +155,36 @@ export async function processReelInline(data: {
                 } catch (apiErr) {
                     console.warn(`[Inline] Proxy API attempt failed:`, apiErr);
                 }
+
+                // SECONDARY PROXY FALLBACK (Insta-Video-Save)
+                if (!videoDownloaded) {
+                    try {
+                        console.log(`[Inline] Trying secondary IG proxy...`);
+                        const secondaryApi = `https://instagram-video-downloader-api.p.rapidapi.com/v1/download?url=${encodeURIComponent(sourceUrl)}`;
+                        const secRes = await fetch(secondaryApi, reqOptions);
+                        if (secRes.ok) {
+                            const secData = await secRes.json();
+                            const mediaUrl = secData.download_url || secData.data?.download_url;
+                            if (mediaUrl) {
+                                const dlRes = await fetch(mediaUrl);
+                                if (dlRes.ok && dlRes.body) {
+                                    const fileStream = fsSync.createWriteStream(videoPath);
+                                    const readable = require('stream').Readable.fromWeb(dlRes.body as any);
+                                    await new Promise((resolve, reject) => {
+                                        readable.pipe(fileStream);
+                                        readable.on('end', resolve);
+                                        readable.on('error', reject);
+                                    });
+                                    videoDownloaded = true;
+                                    console.log(`[Inline] ✅ Video downloaded via Secondary Proxy`);
+                                    return;
+                                }
+                            }
+                        }
+                    } catch (secErr) {
+                         console.warn(`[Inline] Secondary proxy failed`);
+                    }
+                }
                 console.log(`[Inline] Falling back to standard yt-dlp for Instagram...`);
             }
 
@@ -173,11 +200,15 @@ export async function processReelInline(data: {
             try {
                 const { stdout, stderr } = await execAsync(dlCmd, { timeout: timeoutStr });
                 if (stdout) console.log(`[Inline] yt-dlp stdout: ${stdout.slice(0, 200)}`);
-                if (stderr) console.warn(`[Inline] yt-dlp stderr: ${stderr.slice(0, 200)}`);
             } catch (initialErr) {
-                console.warn(`[Inline] yt-dlp attempt failed. Instagram blocking is likely active.`);
-                // If everything fails, it's often an Instagram block. 
-                // We'll let it proceed to transcription (which will skip gracefully if there's no file)
+                console.warn(`[Inline] yt-dlp direct attempt failed. Trying with browser cookies...`);
+                // Final attempt: Use browser cookies (requires Chrome/Edge installed on host)
+                try {
+                    const cookieCmd = `${dlCmd} --cookies-from-browser chrome`;
+                    await execAsync(cookieCmd, { timeout: timeoutStr });
+                } catch (cookieErr) {
+                    console.error(`[Inline] All IG download attempts exhausted.`);
+                }
             }
 
             // Verify file was created

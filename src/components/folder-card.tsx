@@ -149,15 +149,32 @@ export function FolderCard({ id, name, icon, reelCount, className, onUpdate }: F
 
 export function StoryFolder({ id, name, icon, className }: Omit<FolderCardProps, "reelCount" | "onUpdate">) {
   return (
-    <Link href={`/library/${id}`} className={cn("flex flex-col items-center gap-2 shrink-0 group", className)}>
-      <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/10 flex items-center justify-center text-2xl group-hover:scale-105 group-hover:bg-primary/15 transition-all duration-300">
-        <span className="group-hover:scale-110 transition-transform">
-          {icon || <Box className="w-6 h-6 text-muted-foreground" />}
-        </span>
+    <Link 
+      href={`/library/${id}`} 
+      className={cn("flex flex-col items-center gap-3 shrink-0 group", className)}
+    >
+      <div className="relative">
+        {/* Instagram-style Gradient Ring */}
+        <div className="absolute -inset-1.5 rounded-full bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] opacity-20 group-hover:opacity-100 blur-[2px] group-hover:blur-[4px] transition-all duration-700 animate-breath-glow" />
+        
+        {/* Inner Content Surface */}
+        <div className="relative w-20 h-20 rounded-full bg-background border-[3px] border-background flex items-center justify-center text-3xl overflow-hidden shadow-2xl transition-transform duration-700 group-hover:scale-105 active:scale-95">
+          {/* Subtle noise and gloss */}
+          <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+          <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+          
+          <span className="relative z-10 group-hover:scale-110 transition-transform duration-700 drop-shadow-sm">
+            {icon || "📁"}
+          </span>
+        </div>
       </div>
-      <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground transition-colors max-w-[72px] truncate text-center">
-        {name}
-      </span>
+      
+      <div className="flex flex-col items-center">
+        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40 group-hover:text-primary transition-colors duration-500 truncate max-w-[80px]">
+          {name}
+        </span>
+        <div className="w-1 h-1 rounded-full bg-primary/0 group-hover:bg-primary/60 transition-all duration-700 mt-1" />
+      </div>
     </Link>
   );
 }

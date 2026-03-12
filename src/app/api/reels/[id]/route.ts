@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { db } from "@/lib/db";
+import { getServerSession } from "@/lib/auth-utils";
+import { prisma } from "@/lib/db";
 
 // GET /api/reels/[id] — Get single reel detail
 export async function GET(
@@ -8,14 +8,15 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { userId } = await auth();
-        if (!userId) {
+        const session = await getServerSession();
+        if (!session) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
+        const userId = session.id;
 
         const { id } = await params;
 
-        const reel = await db.reel.findFirst({
+        const reel = await (prisma as any).reel.findFirst({
             where: { id, userId },
             include: {
                 folder: { select: { id: true, name: true, icon: true } },
@@ -43,14 +44,15 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { userId } = await auth();
-        if (!userId) {
+        const session = await getServerSession();
+        if (!session) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
+        const userId = session.id;
 
         const { id } = await params;
 
-        const reel = await db.reel.findFirst({
+        const reel = await (prisma as any).reel.findFirst({
             where: { id, userId },
         });
 
@@ -58,7 +60,7 @@ export async function DELETE(
             return NextResponse.json({ error: "Reel not found" }, { status: 404 });
         }
 
-        await db.reel.delete({ where: { id } });
+        await (prisma as any).reel.delete({ where: { id } });
 
         return NextResponse.json({ message: "Reel deleted" });
     } catch (error) {

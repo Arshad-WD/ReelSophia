@@ -64,7 +64,8 @@ async function updateJobStatus(
 }
 
 async function processReel(job: Job<ProcessingJobData>) {
-    const { reelId, sourceUrl, platform, openRouterKey } = job.data;
+    const { reelId, sourceUrl, platform, aiSettings } = job.data;
+    const openRouterKey = aiSettings?.keys?.openrouter;
 
     // Create temporary directory for this specific job
     const tempDir = path.join(os.tmpdir(), "reelsophia", reelId);

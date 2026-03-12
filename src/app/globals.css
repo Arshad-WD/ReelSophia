@@ -62,11 +62,24 @@
 /* ── Deluxe Signature Surface ── */
 @utility signature-card {
   @apply bg-card backdrop-blur-[40px] relative transition-all duration-1000;
-  border: 1px solid oklch(1 0 0 / 0.06); /* Precise inner glass stroke */
-  border-radius: 3rem 1rem 3rem 1.5rem; /* Sophisticated organic curves */
+  border: 1px solid oklch(1 0 0 / 0.06); 
+  border-radius: 3rem 1rem 3rem 1.5rem; 
   box-shadow: 
     0 32px 64px -16px rgba(0, 0, 0, 0.7),
     inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  
+  /* Mobile Gloss */
+  @media (max-width: 768px) {
+    border-radius: 2.25rem;
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, white/5 0%, transparent 50%);
+      pointer-events: none;
+      border-radius: inherit;
+    }
+  }
 }
 
 @utility signature-card-hover {
@@ -77,6 +90,47 @@
     box-shadow: 
       0 48px 80px -24px rgba(0, 0, 0, 0.8),
       0 0 30px oklch(0.55 0.23 350 / 0.15); /* Ethereal primary glow */
+  }
+}
+
+/* ── Velvet Card Surface ── */
+@utility velvet-card {
+  @apply relative bg-card/60 backdrop-blur-[40px] transition-all duration-700;
+  border: 1px solid oklch(1 0 0 / 0.06);
+  border-radius: 2rem;
+  box-shadow:
+    0 24px 48px -12px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* ── Glass Card Surface ── */
+@utility glass-card {
+  @apply relative bg-white/[0.04] backdrop-blur-[60px] transition-all duration-700;
+  border: 1px solid oklch(1 0 0 / 0.08);
+  border-radius: 1.5rem;
+  box-shadow:
+    0 16px 40px -8px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* ── Primary Button ── */
+@utility btn-primary {
+  @apply relative overflow-hidden font-bold px-8 py-3 rounded-xl transition-all duration-500 flex items-center justify-center gap-3 text-sm;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+
+  &:hover:not(:disabled) {
+    @apply -translate-y-0.5 shadow-xl scale-[1.01];
+    filter: brightness(1.15);
+  }
+
+  &:active:not(:disabled) {
+    @apply translate-y-0 scale-[0.98];
+  }
+
+  &:disabled {
+    @apply opacity-50 cursor-not-allowed;
   }
 }
 
@@ -218,21 +272,21 @@
   -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
 }
 
-/* Hide Clerk Development Mode */
-.cl-internal-kq110m,
-[class*="cl-internal-"],
-.cl-dev-mode,
-.cl-footer,
-div[data-clerk-version] + div {
-  display: none !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-  visibility: hidden !important;
+/* Final Visual Polish */
+.animate-float, .animate-pulse-glow, .animate-shimmer-amber, .animate-breath-glow { 
+  will-change: transform, opacity; 
+  transform: translateZ(0); 
 }
-/* Final Performance & Visual Polish */
-.animate-float, .animate-pulse-glow, .animate-shimmer-amber, .animate-breath-glow { will-change: transform, opacity; transform: translateZ(0); }
-[class*='cl-'] > div:last-child:has(a[href*='clerk.com']) { display: none !important; opacity: 0 !important; height: 0 !important; pointer-events: none !important; visibility: hidden !important; }
-.cl-dev-mode, .cl-internal-kq110m, [class*='cl-internal-'] { display: none !important; }
+
+/* Signature Series Utilities */
+.btn-signature {
+  @apply relative overflow-hidden transition-all duration-700 flex items-center justify-center gap-4 bg-primary text-background font-bold uppercase tracking-[0.2em] rounded-2xl py-6 px-12;
+  box-shadow: 0 20px 40px rgba(245, 158, 11, 0.2);
+}
+
+.btn-signature:hover {
+  @apply scale-105 shadow-[0_30px_60px_rgba(245,158,11,0.3)];
+}
 
 /* Spotlight Hover Effect - Standard CSS */
 .spotlight-hover { position: relative; overflow: hidden; }
@@ -250,4 +304,43 @@ div[data-clerk-version] + div {
 
 @keyframes page-entry { from { opacity: 0; transform: translateY(20px) scale(0.98); filter: blur(10px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
 .animate-page-entry { animation: page-entry 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+
+/* ── Zen Mode Architecture ── */
+.zen-mode .animate-breath-glow {
+  opacity: 0 !important;
+  transition: opacity 2s ease-in-out;
+}
+
+.zen-mode .btn-signature {
+  filter: saturate(0.5);
+}
+
+/* ── Nexus Custom Core ── */
+@keyframes loading-bar {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-loading-bar {
+  animation: loading-bar 2s infinite linear;
+}
+
+@keyframes ping-slow {
+  0% { transform: scale(1); opacity: 0.3; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.animate-ping-slow {
+  animation: ping-slow 3s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float-slow {
+  animation: float-slow 4s ease-in-out infinite;
+}
 

@@ -1,31 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { db } from "@/lib/db";
+import { getServerSession } from "@/lib/auth-utils";
+import { z } from "zod";
+import { db, prisma } from "@/lib/db";
 import { validateReelUrl } from "@/lib/url-validator";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { sanitize } from "@/lib/sanitize";
 import { processReelInline } from "@/lib/inline-processor";
 
+const requestSchema = z.object({
+    url: z.string().url("Invalid Reel URL format").min(1, "URL is required"),
+    folderId: z.string().optional().nullable(),
+});
+
 // POST /api/reels — Submit a reel URL for processing
 export async function POST(req: NextRequest) {
     try {
-        const { userId } = await auth();
-        if (!userId) {
+        const session = await getServerSession();
+        if (!session) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
+        const userId = session.id;
 
-        const body = await req.json();
-        const url = sanitize(body.url?.trim() || "");
-        const folderId = body.folderId || null;
+        const json = await req.json();
+        const result = requestSchema.safeParse(json);
+        
+        if (!result.success) {
+            return NextResponse.json(
+                { error: result.error.issues[0].message },
+                { status: 400 }
+            );
+        }
 
-        // Wait, Clerk user ID is passed. Let's sync user from DB first to get their openRouterKey
-        let userDb = await db.user.findUnique({
+        const url = sanitize(result.data.url.trim());
+        const folderId = result.data.folderId || null;
+
+        let userDb = await (prisma as any).user.findUnique({
             where: { id: userId },
         });
 
         if (!userDb) {
-            userDb = await db.user.create({
-                data: { id: userId, email: "" },
+            userDb = await (prisma as any).user.create({
+                data: { id: userId, email: session.email, name: session.name },
             });
         }
 
@@ -39,7 +54,8 @@ export async function POST(req: NextRequest) {
         }
 
         // Rate limit check - Bypass if custom key exists
-        if (!userDb.openRouterKey) {
+        const hasCustomKey = (userDb.aiSettings as any)?.keys?.openrouter;
+        if (!hasCustomKey) {
             const rateCheck = checkRateLimit(userId);
             if (!rateCheck.allowed) {
                 const retryMinutes = Math.ceil((rateCheck.retryAfterMs || 0) / 60000);
@@ -54,7 +70,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Duplicate detection — check if URL already processed by this user
-        const existing = await db.reel.findUnique({
+        const existing = await (prisma as any).reel.findUnique({
             where: {
                 userId_sourceUrl: {
                     userId,
@@ -83,13 +99,13 @@ export async function POST(req: NextRequest) {
 
             // If it's a placeholder/failed, delete it and start fresh
             console.log(`[API] Re-processing placeholder reel ${existing.id}`);
-            await db.processingJob.deleteMany({ where: { reelId: existing.id } });
-            await db.reel.delete({ where: { id: existing.id } });
+            await (prisma as any).processingJob.deleteMany({ where: { reelId: existing.id } });
+            await (prisma as any).reel.delete({ where: { id: existing.id } });
         }
 
         // Validate folder belongs to user if provided
         if (folderId) {
-            const folder = await db.folder.findFirst({
+            const folder = await (prisma as any).folder.findFirst({
                 where: { id: folderId, userId },
             });
             if (!folder) {
@@ -101,7 +117,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Create reel record
-        const reel = await db.reel.create({
+        const reel = await (prisma as any).reel.create({
             data: {
                 userId,
                 folderId,
@@ -112,7 +128,7 @@ export async function POST(req: NextRequest) {
         });
 
         // Create processing job record
-        await db.processingJob.create({
+        await (prisma as any).processingJob.create({
             data: {
                 reelId: reel.id,
                 status: "PENDING",
@@ -126,7 +142,7 @@ export async function POST(req: NextRequest) {
             userId,
             sourceUrl: url,
             platform: validation.platform!,
-            openRouterKey: userDb.openRouterKey || undefined,
+            aiSettings: userDb.aiSettings as any,
         }).catch((err) => {
             console.error(`[API] Background processing error for ${reel.id}:`, err);
         });
@@ -147,14 +163,21 @@ export async function POST(req: NextRequest) {
 // GET /api/reels — List user's reels
 export async function GET(req: NextRequest) {
     try {
-        const { userId } = await auth();
-        if (!userId) {
+        const session = await getServerSession();
+        if (!session) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
+        const userId = session.id;
 
         const { searchParams } = new URL(req.url);
         const folderId = searchParams.get("folderId");
         const status = searchParams.get("status");
+        
+        // Trigger stale job cleanup occasionally (lazy maintenance)
+        import("@/lib/cleanup-stale-jobs").then(({ cleanupStaleJobs }) => {
+            cleanupStaleJobs().catch(e => console.error("[API] Stale job cleanup error:", e));
+        });
+
         const limit = parseInt(searchParams.get("limit") || "20", 10);
         const offset = parseInt(searchParams.get("offset") || "0", 10);
 
@@ -163,7 +186,7 @@ export async function GET(req: NextRequest) {
         if (status) where.status = status;
 
         const [reels, total] = await Promise.all([
-            db.reel.findMany({
+            (prisma as any).reel.findMany({
                 where,
                 include: {
                     folder: { select: { id: true, name: true, icon: true } },
@@ -173,7 +196,7 @@ export async function GET(req: NextRequest) {
                 take: Math.min(limit, 50),
                 skip: offset,
             }),
-            db.reel.count({ where }),
+            (prisma as any).reel.count({ where }),
         ]);
 
         return NextResponse.json({ reels, total, limit, offset });

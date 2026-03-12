@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { db } from "@/lib/db";
+import { getServerSession } from "@/lib/auth-utils";
+import { prisma } from "@/lib/db";
 import { sanitize } from "@/lib/sanitize";
 
 // GET /api/folders — List user's folders
 export async function GET() {
     try {
-        const { userId } = await auth();
-        if (!userId) {
+        const session = await getServerSession();
+        if (!session) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
+        const userId = session.id;
 
-        const folders = await db.folder.findMany({
+        const folders = await (prisma as any).folder.findMany({
             where: { userId },
             include: {
                 _count: { select: { reels: true } },
@@ -32,10 +33,11 @@ export async function GET() {
 // POST /api/folders — Create a folder
 export async function POST(req: NextRequest) {
     try {
-        const { userId } = await auth();
-        if (!userId) {
+        const session = await getServerSession();
+        if (!session) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
+        const userId = session.id;
 
         const body = await req.json();
         const name = sanitize(body.name?.trim() || "");
@@ -49,14 +51,14 @@ export async function POST(req: NextRequest) {
         }
 
         // Ensure user exists
-        await db.user.upsert({
+        await (prisma as any).user.upsert({
             where: { id: userId },
             update: {},
-            create: { id: userId, email: "" },
+            create: { id: userId, email: session.email, name: session.name },
         });
 
         // Check for duplicate folder name
-        const existing = await db.folder.findFirst({
+        const existing = await (prisma as any).folder.findFirst({
             where: { userId, name },
         });
 
@@ -67,7 +69,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const folder = await db.folder.create({
+        const folder = await (prisma as any).folder.create({
             data: { userId, name, icon },
         });
 

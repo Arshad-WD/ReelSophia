@@ -15,12 +15,30 @@ export interface ChunkSummary {
     concepts: string[];
 }
 
+export interface AISettings {
+    keys: {
+        openrouter?: string;
+        openai?: string;
+        anthropic?: string;
+        gemini?: string;
+    };
+    preferredProvider: string;
+}
+
+export interface User {
+    id: string;
+    email: string;
+    name: string | null;
+    imageUrl: string | null;
+    aiSettings: AISettings | null;
+}
+
 export interface ProcessingJobData {
     reelId: string;
     userId: string;
     sourceUrl: string;
     platform: string;
-    openRouterKey?: string;
+    aiSettings?: AISettings;
 }
 
 export interface ReelWithJob {

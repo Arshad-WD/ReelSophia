@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { db } from "@/lib/db";
+import { getServerSession } from "@/lib/auth-utils";
+import { prisma } from "@/lib/db";
 import { sanitize } from "@/lib/sanitize";
 
 // PATCH /api/folders/[id] — Rename a folder
@@ -9,14 +9,15 @@ export async function PATCH(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { userId } = await auth();
-        if (!userId) {
+        const session = await getServerSession();
+        if (!session) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
+        const userId = session.id;
 
         const { id } = await params;
         const body = await req.json();
-        const name = sanitize(body.name?.trim() || "");
+        const name = body.name ? sanitize(body.name.trim()) : "";
         const icon = body.icon;
 
         if (name && (name.length < 1 || name.length > 50)) {
@@ -26,7 +27,7 @@ export async function PATCH(
             );
         }
 
-        const folder = await db.folder.findFirst({
+        const folder = await (prisma as any).folder.findFirst({
             where: { id, userId },
         });
 
@@ -41,7 +42,7 @@ export async function PATCH(
         if (name) updateData.name = name;
         if (icon) updateData.icon = icon;
 
-        const updated = await db.folder.update({
+        const updated = await (prisma as any).folder.update({
             where: { id },
             data: updateData,
         });
@@ -62,14 +63,15 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { userId } = await auth();
-        if (!userId) {
+        const session = await getServerSession();
+        if (!session) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
+        const userId = session.id;
 
         const { id } = await params;
 
-        const folder = await db.folder.findFirst({
+        const folder = await (prisma as any).folder.findFirst({
             where: { id, userId },
         });
 
@@ -80,7 +82,7 @@ export async function DELETE(
             );
         }
 
-        await db.folder.delete({ where: { id } });
+        await (prisma as any).folder.delete({ where: { id } });
 
         return NextResponse.json({ message: "Folder deleted" });
     } catch (error) {

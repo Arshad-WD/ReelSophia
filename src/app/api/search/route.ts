@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { db } from "@/lib/db";
+import { getServerSession } from "@/lib/auth-utils";
+import { prisma } from "@/lib/db";
 
 // GET /api/search?q=query — Search across titles, summaries, tags
 export async function GET(req: NextRequest) {
     try {
-        const { userId } = await auth();
-        if (!userId) {
+        const session = await getServerSession();
+        if (!session) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
+        const userId = session.id;
 
         const { searchParams } = new URL(req.url);
         const query = searchParams.get("q")?.trim();
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest) {
             );
         }
 
-        const reels = await db.reel.findMany({
+        const reels = await (prisma as any).reel.findMany({
             where: {
                 userId,
                 status: "COMPLETED",

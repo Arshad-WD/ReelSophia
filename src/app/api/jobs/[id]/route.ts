@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { db } from "@/lib/db";
+import { getServerSession } from "@/lib/auth-utils";
+import { prisma } from "@/lib/db";
 
 // GET /api/jobs/[id] — Get processing job status
 export async function GET(
@@ -8,15 +8,16 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { userId } = await auth();
-        if (!userId) {
+        const session = await getServerSession();
+        if (!session) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
+        const userId = session.id;
 
         const { id } = await params;
 
         // id can be reelId or jobId
-        const job = await db.processingJob.findFirst({
+        const job = await (prisma as any).processingJob.findFirst({
             where: {
                 OR: [{ id }, { reelId: id }],
                 reel: { userId },
