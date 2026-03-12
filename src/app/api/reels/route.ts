@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { validateReelUrl } from "@/lib/url-validator";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { sanitize } from "@/lib/sanitize";
-import { addReelJob } from "@/lib/queue";
+import { processReelInline } from "@/lib/inline-processor";
 
 // POST /api/reels — Submit a reel URL for processing
 export async function POST(req: NextRequest) {
@@ -62,21 +62,29 @@ export async function POST(req: NextRequest) {
                 },
             },
             include: {
-                folder: true,
                 job: true,
             },
         });
 
         if (existing) {
-            // Return existing result instead of re-processing
-            return NextResponse.json(
-                {
-                    reel: existing,
-                    duplicate: true,
-                    message: "This reel has already been processed",
-                },
-                { status: 200 }
-            );
+            // If the reel is already completed with actual knowledge, return it
+            const isPlaceholder = existing.transcript?.includes("placeholder") || existing.summary?.includes("placeholder") || existing.status === "FAILED";
+            
+            if (!isPlaceholder) {
+                return NextResponse.json(
+                    {
+                        reel: existing,
+                        duplicate: true,
+                        message: "This reel has already been processed",
+                    },
+                    { status: 200 }
+                );
+            }
+
+            // If it's a placeholder/failed, delete it and start fresh
+            console.log(`[API] Re-processing placeholder reel ${existing.id}`);
+            await db.processingJob.deleteMany({ where: { reelId: existing.id } });
+            await db.reel.delete({ where: { id: existing.id } });
         }
 
         // Validate folder belongs to user if provided
@@ -112,19 +120,16 @@ export async function POST(req: NextRequest) {
             },
         });
 
-        // Add to processing queue
-        try {
-            await addReelJob({
-                reelId: reel.id,
-                userId,
-                sourceUrl: url,
-                platform: validation.platform!,
-                openRouterKey: userDb.openRouterKey || undefined,
-            });
-        } catch (queueError) {
-            console.warn("Queue unavailable, job saved to DB:", queueError);
-            // Job is saved in DB — can be picked up later
-        }
+        // Fire-and-forget: process the reel inline (no queue needed)
+        processReelInline({
+            reelId: reel.id,
+            userId,
+            sourceUrl: url,
+            platform: validation.platform!,
+            openRouterKey: userDb.openRouterKey || undefined,
+        }).catch((err) => {
+            console.error(`[API] Background processing error for ${reel.id}:`, err);
+        });
 
         return NextResponse.json(
             { reel, message: "Processing started" },

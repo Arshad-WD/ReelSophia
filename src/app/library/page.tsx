@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import { FolderCard } from "@/components/folder-card";
 import { NoteCard } from "@/components/note-card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -12,13 +10,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Library, Plus, FolderPlus } from "lucide-react";
+import { Plus, Box } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Folder {
   id: string;
@@ -31,11 +26,8 @@ interface Reel {
   id: string;
   title: string | null;
   summary: string | null;
-  mainIdea: string | null;
-  tags: string[];
   status: string;
   platform: string;
-  sourceUrl: string;
   createdAt: string;
   folder: { id: string; name: string; icon: string | null } | null;
   job: { status: string; progress: number; error: string | null } | null;
@@ -96,71 +88,74 @@ export default function LibraryPage() {
         return;
       }
 
-      toast.success("Folder created!");
+      toast.success("Collection created!");
       setNewFolderName("");
       setNewFolderIcon("📁");
       setDialogOpen(false);
       fetchData();
     } catch {
-      toast.error("Failed to create folder");
+      toast.error("Failed to create collection");
     } finally {
       setCreating(false);
     }
   };
 
-  const EMOJI_OPTIONS = ["📁", "💻", "🎯", "🧠", "💰", "🍳", "📚", "🎨", "🏋️", "🌍", "🔬", "🎵"];
+  const EMOJI_OPTIONS = ["📁", "🧠", "🎯", "💻", "📚", "🎨", "🔬", "🌍", "🎵", "💰", "🍳", "🏋️"];
 
   if (loading) {
     return (
-      <div className="px-5 pt-6 max-w-md mx-auto">
-        <Skeleton className="h-8 w-32 mb-6" />
-        <div className="space-y-3">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-20 rounded-2xl" />
-          ))}
+      <div className="pt-12 px-10">
+        <Skeleton className="h-10 w-64 mb-8 rounded-xl bg-card/50" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
+          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-20 rounded-2xl bg-card/50" />)}
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => <Skeleton key={i} className="h-52 rounded-2xl bg-card/50" />)}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="px-5 pt-8 max-w-md mx-auto min-h-screen">
+    <div className="pt-8 lg:pt-12 pb-32 px-5 lg:px-10 animate-in fade-in duration-500">
       {/* Header */}
-      <div className="flex items-center justify-between mb-10">
-        <h1 className="text-2xl font-sans font-extrabold text-white uppercase italic underline decoration-primary/40 underline-offset-8">
-          The Archive
-        </h1>
+      <header className="flex items-start justify-between mb-10">
+        <div>
+          <h1 className="text-3xl lg:text-4xl font-bold text-foreground tracking-tight mb-1">
+            Library
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {reels.length} reel{reels.length !== 1 ? "s" : ""} · {folders.length} collection{folders.length !== 1 ? "s" : ""}
+          </p>
+        </div>
+
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger>
-            <div
-              className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors cursor-pointer"
-              title="New Collection"
-            >
-              <Plus className="w-5 h-5 text-primary" />
-            </div>
-          </DialogTrigger>
-          <DialogContent className="journal-card border-white/10 max-w-sm mx-auto bg-black p-8">
+          <DialogTrigger render={
+            <button className="btn-ghost flex items-center gap-2 border border-border/30 rounded-xl px-4 py-2.5">
+              <Plus className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium">New Collection</span>
+            </button>
+          } />
+          <DialogContent className="velvet-card border-border/50 max-w-md mx-auto p-8">
             <DialogHeader>
-              <DialogTitle className="font-sans font-extrabold text-xl text-white uppercase italic text-center">
+              <DialogTitle className="text-xl font-bold text-foreground">
                 New Collection
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-6 pt-4">
-              {/* Icon selector */}
               <div>
-                <label className="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-muted-foreground/60 mb-4 block">
-                  Select Visual Identifier
-                </label>
-                <div className="flex flex-wrap gap-2">
+                <label className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-3 block">Icon</label>
+                <div className="grid grid-cols-6 gap-2">
                   {EMOJI_OPTIONS.map((emoji) => (
                     <button
                       key={emoji}
                       onClick={() => setNewFolderIcon(emoji)}
-                      className={`w-12 h-12 rounded-xl border flex items-center justify-center text-xl transition-all ${
+                      className={cn(
+                        "aspect-square rounded-xl border flex items-center justify-center text-xl transition-all",
                         newFolderIcon === emoji
-                          ? "bg-primary/20 border-primary scale-110 shadow-[0_0_15px_rgba(220,39,67,0.3)]"
-                          : "bg-white/5 border-white/5 hover:border-white/20"
-                      }`}
+                          ? "bg-primary/10 border-primary/30 scale-105"
+                          : "bg-white/[0.02] border-border/30 hover:border-border"
+                      )}
                     >
                       {emoji}
                     </button>
@@ -168,14 +163,14 @@ export default function LibraryPage() {
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <label className="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-muted-foreground/60 block">COLLECTION LABEL</label>
+              <div>
+                <label className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-2 block">Name</label>
                 <input
-                  placeholder="e.g. Machine Learning Basics"
+                  placeholder="e.g. Productivity Tips"
                   value={newFolderName}
                   onChange={(e) => setNewFolderName(e.target.value)}
                   maxLength={50}
-                  className="editorial-input w-full"
+                  className="w-full bg-white/[0.03] border border-border/30 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/40 transition-all text-sm font-medium text-foreground placeholder:text-muted-foreground/30"
                   onKeyDown={(e) => e.key === "Enter" && createFolder()}
                 />
               </div>
@@ -183,67 +178,65 @@ export default function LibraryPage() {
               <button
                 onClick={createFolder}
                 disabled={creating || !newFolderName.trim()}
-                className="w-full btn-journal-primary text-sm tracking-widest"
+                className="btn-primary w-full"
               >
-                {creating ? "INITIALIZING..." : "CONFIRM COLLECTION"}
+                {creating ? "Creating..." : "Create Collection"}
               </button>
             </div>
           </DialogContent>
         </Dialog>
-      </div>
+      </header>
 
-      {/* Folders */}
-      {folders.length > 0 && (
-        <section className="mb-12">
-          <h2 className="text-[10px] font-sans font-extrabold text-muted-foreground mb-6 uppercase tracking-[0.3em] flex items-center gap-3">
-             <span className="w-8 h-[1px] bg-white/10" /> CATEGORIES
-          </h2>
-          <div className="space-y-3">
-            {folders.map((folder) => (
-              <FolderCard
-                key={folder.id}
-                id={folder.id}
-                name={folder.name}
-                icon={folder.icon}
-                reelCount={folder._count.reels}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      <section className="pb-20">
-        <h2 className="text-[10px] font-sans font-extrabold text-muted-foreground mb-6 uppercase tracking-[0.3em] flex items-center gap-3">
-           <span className="w-8 h-[1px] bg-white/10" /> COMPREHENSIVE LEDGER
-        </h2>
-        {reels.length === 0 ? (
-          <div className="journal-card p-12 text-center border-dashed border-2 bg-transparent">
-            <p className="text-5xl mb-6 text-muted-foreground opacity-20">EMPTY</p>
-            <p className="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
-              No entries recorded in the ledger.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {reels.map((reel) => (
-              <NoteCard
-                key={reel.id}
-                id={reel.id}
-                title={reel.title}
-                summary={reel.summary}
-                mainIdea={reel.mainIdea}
-                tags={reel.tags}
-                status={reel.status}
-                platform={reel.platform}
-                sourceUrl={reel.sourceUrl}
-                createdAt={reel.createdAt}
-                folder={reel.folder}
-                job={reel.job}
-              />
-            ))}
-          </div>
+      <div className="space-y-12">
+        {/* Collections */}
+        {folders.length > 0 && (
+          <section>
+            <h2 className="text-sm font-semibold text-foreground mb-5">Collections</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {folders.map((folder) => (
+                <FolderCard
+                  key={folder.id}
+                  id={folder.id}
+                  name={folder.name}
+                  icon={folder.icon}
+                  reelCount={folder._count.reels}
+                  onUpdate={fetchData}
+                />
+              ))}
+            </div>
+          </section>
         )}
-      </section>
+
+        {/* All Reels */}
+        <section>
+          <h2 className="text-sm font-semibold text-foreground mb-5">All Reels</h2>
+          {reels.length === 0 ? (
+            <div className="velvet-card p-16 text-center">
+              <Box className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4 animate-float" />
+              <p className="text-sm text-muted-foreground">
+                No reels yet. Capture your first one!
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+              {reels.map((reel) => (
+                <NoteCard
+                  key={reel.id}
+                  id={reel.id}
+                  title={reel.title}
+                  summary={reel.summary}
+                  status={reel.status}
+                  platform={reel.platform}
+                  createdAt={new Date(reel.createdAt)}
+                  folderName={reel.folder?.name}
+                  jobProgress={reel.job?.progress}
+                  jobError={reel.job?.error}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

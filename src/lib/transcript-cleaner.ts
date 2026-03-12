@@ -53,14 +53,34 @@ export function cleanTranscript(raw: string): string {
         cleaned = cleaned.replace(pattern, "");
     }
 
-    // 4. Remove repeated sentences
+    // 4. Remove repeated phrases (Safety for STT artifacts)
+    cleaned = removeRepeatedPhrases(cleaned);
+
+    // 5. Remove repeated sentences
     cleaned = removeRepeatedSentences(cleaned);
 
-    // 5. Clean up resulting whitespace
+    // 6. Clean up resulting whitespace
     cleaned = cleaned.replace(/\s{2,}/g, " ").trim();
     cleaned = cleaned.replace(/\s+([.,!?])/g, "$1");
 
     return cleaned;
+}
+
+/**
+ * Remove sequential repeated phrases (e.g. "word phrase word phrase")
+ */
+function removeRepeatedPhrases(text: string): string {
+    // Look for phrases of at least 10 chars that repeat immediately
+    // This catches the "rolling subtitle" stuttering.
+    // Example: "Hello world Hello world" -> "Hello world"
+    let result = text;
+    
+    // We do this a few times to catch 3x or 4x repetitions
+    for (let i = 0; i < 2; i++) {
+        result = result.replace(/(.{15,})\1+/gi, "$1");
+    }
+    
+    return result;
 }
 
 /**

@@ -1,21 +1,28 @@
 {
-    "name": "ReelSophia",
+    "name": "ReelSophia — Knowledge Extraction Ledger",
     "short_name": "ReelSophia",
-    "description": "Transform informative social media reels into structured knowledge notes.",
+    "description": "Transform informative social media reels into structured knowledge notes. Extract wisdom from the noise.",
     "start_url": "/",
+    "scope": "/",
     "display": "standalone",
-    "background_color": "#000000",
-    "theme_color": "#dc2743",
+    "orientation": "portrait",
+    "background_color": "#0a0a0b",
+    "theme_color": "#0f0d15",
+    "categories": ["productivity", "education", "utilities"],
     "icons": [
         {
             "src": "/icon-192x192.png",
             "sizes": "192x192",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
         },
         {
             "src": "/icon-512x512.png",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
         }
-    ]
-}
+    ],
+    "screenshots": [],
+    "prefer_related_applications": false
+}

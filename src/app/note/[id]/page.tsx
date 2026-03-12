@@ -2,21 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProcessingStatus } from "@/components/processing-status";
 import { toast } from "sonner";
 import {
-  ArrowLeft,
-  ExternalLink,
-  Trash2,
-  Lightbulb,
-  Target,
-  Wrench,
-  FileText,
-  BookOpen,
-  MoreVertical,
+  ArrowLeft, ExternalLink, Trash2, Target, Wrench,
+  BookOpen, Sparkles, Zap, Globe, Clock, MoreVertical
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -59,11 +50,11 @@ export default function NoteDetailPage() {
           const data = await res.json();
           setReel(data.reel);
         } else {
-          toast.error("Note not found");
+          toast.error("Reel not found");
           router.push("/library");
         }
       } catch {
-        toast.error("Failed to load note");
+        toast.error("Failed to load");
       } finally {
         setLoading(false);
       }
@@ -72,11 +63,11 @@ export default function NoteDetailPage() {
   }, [params.id, router]);
 
   const deleteReel = async () => {
-    if (!confirm("Delete this note permanently?")) return;
+    if (!confirm("Delete this reel and its notes?")) return;
     try {
       const res = await fetch(`/api/reels/${params.id}`, { method: "DELETE" });
       if (res.ok) {
-        toast.success("Note deleted");
+        toast.success("Reel deleted");
         router.push("/library");
       }
     } catch {
@@ -86,12 +77,14 @@ export default function NoteDetailPage() {
 
   if (loading) {
     return (
-      <div className="px-5 pt-6 max-w-md mx-auto">
-        <Skeleton className="h-8 w-32 mb-4" />
-        <Skeleton className="h-10 w-full mb-3" />
-        <Skeleton className="h-24 rounded-2xl mb-4" />
-        <Skeleton className="h-40 rounded-2xl mb-4" />
-        <Skeleton className="h-32 rounded-2xl" />
+      <div className="pt-12 px-10 max-w-[1000px] mx-auto">
+        <Skeleton className="h-8 w-8 rounded-xl mb-10 bg-card/50" />
+        <Skeleton className="h-10 w-3/4 mb-4 bg-card/50" />
+        <Skeleton className="h-5 w-1/2 mb-12 bg-card/50" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Skeleton className="h-80 rounded-2xl bg-card/50 lg:col-span-2" />
+          <Skeleton className="h-80 rounded-2xl bg-card/50" />
+        </div>
       </div>
     );
   }
@@ -101,183 +94,207 @@ export default function NoteDetailPage() {
   const isProcessing = reel.status !== "COMPLETED" && reel.status !== "FAILED";
 
   return (
-    <div className="px-5 pt-8 max-w-md mx-auto pb-24 min-h-screen">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-12">
+    <div className="pt-8 lg:pt-12 pb-32 px-5 lg:px-10 max-w-[1100px] mx-auto min-h-screen animate-in fade-in duration-500">
+      {/* Navigation */}
+      <nav className="flex items-center justify-between mb-10">
         <button
           onClick={() => router.back()}
-          className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center bg-black hover:bg-white/5 transition-colors"
+          className="w-10 h-10 rounded-xl velvet-card flex items-center justify-center hover:border-primary/30 transition-all group outline-none"
         >
-          <ArrowLeft className="w-5 h-5 text-white" />
+          <ArrowLeft className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
         </button>
-        <div className="flex items-center gap-3">
+
+        <div className="flex items-center gap-2">
           <a
             href={reel.sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center bg-black hover:bg-white/5 transition-colors"
-            title="View Source"
+            className="w-10 h-10 rounded-xl velvet-card flex items-center justify-center hover:border-primary/30 transition-all"
           >
             <ExternalLink className="w-4 h-4 text-primary" />
           </a>
+
           <DropdownMenu>
-            <DropdownMenuTrigger>
-              <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center bg-black hover:border-destructive/40 transition-colors cursor-pointer">
-                <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
-              </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="journal-card border-white/10 bg-black p-2 min-w-[160px]">
-              <DropdownMenuItem onClick={deleteReel} className="text-destructive font-sans font-bold text-xs uppercase cursor-pointer hover:bg-white/5 py-3">
-                <Trash2 className="w-4 h-4 mr-2" />
-                Confirm Delete
+            <DropdownMenuTrigger render={
+              <button className="w-10 h-10 rounded-xl velvet-card flex items-center justify-center hover:border-destructive/30 transition-all outline-none">
+                <MoreVertical className="w-4 h-4 text-muted-foreground" />
+              </button>
+            } />
+            <DropdownMenuContent align="end" className="velvet-card border-border/50 p-1.5 min-w-[160px]">
+              <DropdownMenuItem
+                onClick={deleteReel}
+                className="text-destructive text-xs cursor-pointer hover:bg-destructive/10 py-2.5 px-3 rounded-lg flex items-center gap-2"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Delete Reel
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </div>
+      </nav>
 
-      {/* Processing state */}
+      {/* Processing State */}
       {isProcessing && (
-        <div className="journal-card p-6 border-primary/20 bg-primary/5 mb-8">
+        <section className="velvet-card p-8 border-primary/20 bg-primary/5 mb-10 animate-in slide-in-from-top-4">
           <ProcessingStatus
             status={reel.job?.status || reel.status}
             progress={reel.job?.progress}
             error={reel.job?.error}
+            className="max-w-md"
           />
-        </div>
+        </section>
       )}
 
-      {/* Title & Meta */}
-      <div className="mb-12">
-        <div className="px-2 py-0.5 rounded-full border border-white/10 text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-muted-foreground inline-block mb-4">
-          ENTRY #{reel.id.slice(-4).toUpperCase()}
-        </div>
-        <h1 className="text-4xl font-sans font-extrabold tracking-tight mb-6 text-white leading-[1.1] italic uppercase underline decoration-primary/40 underline-offset-8">
-           {reel.title || "Untitled Insight"}
-        </h1>
-        <div className="flex flex-wrap items-center gap-6 text-[10px] font-sans font-bold text-muted-foreground/60 uppercase tracking-[0.15em]">
+      {/* Header */}
+      <header className="mb-12">
+        <div className="flex items-center gap-3 mb-4 flex-wrap">
+          <span className="text-xs font-medium text-primary bg-primary/10 px-3 py-1 rounded-lg">
+            {reel.platform}
+          </span>
           {reel.folder && (
-            <span className="flex items-center gap-2 text-primary">
+            <span className="text-xs text-muted-foreground bg-white/[0.03] px-3 py-1 rounded-lg flex items-center gap-1.5">
               {reel.folder.icon || "📁"} {reel.folder.name}
             </span>
           )}
-          <span>{reel.platform} SOURCE</span>
-          <span>{new Date(reel.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+          <span className="text-xs text-muted-foreground flex items-center gap-1.5" suppressHydrationWarning>
+            <Clock className="w-3.5 h-3.5" />
+            {new Date(reel.createdAt).toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' })}
+          </span>
+        </div>
+
+        <h1 className="text-3xl lg:text-4xl font-bold text-foreground tracking-tight leading-tight mb-4">
+          {reel.title || "Untitled Reel"}
+        </h1>
+
+        {reel.shortExplanation && (
+          <p className="text-base text-muted-foreground leading-relaxed max-w-2xl">
+            {reel.shortExplanation}
+          </p>
+        )}
+      </header>
+
+      {/* Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Column */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Main Idea */}
+          {reel.mainIdea && (
+            <section className="velvet-card p-8 bg-primary/5 border-primary/10">
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <h2 className="text-xs font-semibold text-primary uppercase tracking-wider">Core Insight</h2>
+              </div>
+              <p className="text-xl font-semibold text-foreground leading-snug pl-5 border-l-2 border-primary/40">
+                {reel.mainIdea}
+              </p>
+            </section>
+          )}
+
+          {/* Key Points */}
+          {reel.keyPoints.length > 0 && (
+            <section>
+              <div className="flex items-center gap-2 mb-4 px-1">
+                <Target className="w-4 h-4 text-muted-foreground" />
+                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Key Points</h2>
+              </div>
+              <div className="space-y-3">
+                {reel.keyPoints.map((point, i) => (
+                  <div key={i} className="velvet-card p-5 group hover:border-primary/20 transition-all">
+                    <div className="flex gap-4">
+                      <span className="text-sm font-bold text-primary/40 group-hover:text-primary transition-colors mt-0.5">
+                        {(i + 1).toString().padStart(2, '0')}
+                      </span>
+                      <p className="text-sm text-muted-foreground group-hover:text-foreground transition-colors leading-relaxed">
+                        {point}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Actionable Tips */}
+          {reel.actionableTips.length > 0 && (
+            <section className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-primary" />
+                <h2 className="text-xs font-semibold text-primary uppercase tracking-wider">Action Steps</h2>
+              </div>
+              {reel.actionableTips.map((tip, i) => (
+                <div key={i} className="velvet-card p-4 bg-primary/5 border-primary/10 group hover:bg-primary/10 transition-all">
+                  <p className="text-sm font-medium text-foreground leading-snug">
+                    {tip}
+                  </p>
+                </div>
+              ))}
+            </section>
+          )}
+
+          {/* Tools & Concepts */}
+          {reel.toolsConcepts.length > 0 && (
+            <section className="velvet-card p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Wrench className="w-4 h-4 text-muted-foreground" />
+                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Mentioned</h2>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {reel.toolsConcepts.map((tool) => (
+                  <span key={tool} className="px-3 py-1.5 rounded-lg bg-white/[0.03] border border-border/30 text-xs font-medium text-muted-foreground">
+                    {tool}
+                  </span>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Tags */}
+          {reel.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {reel.tags.map((tag) => (
+                <span key={tag} className="text-xs text-muted-foreground/60 font-medium">
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Main Idea */}
-      {reel.mainIdea && (
-        <div className="journal-card p-8 mb-8 bg-[#050505]">
-          <h2 className="text-[10px] font-sans font-extrabold uppercase tracking-[0.3em] text-muted-foreground/40 mb-6 flex items-center gap-3">
-             <span className="w-8 h-[1px] bg-white/10" /> CORE INSIGHT
-          </h2>
-          <p className="text-xl font-sans font-semibold leading-relaxed text-white/90 italic border-l-2 border-primary pl-6">{reel.mainIdea}</p>
-        </div>
-      )}
-
-      {/* Key Points */}
-      {reel.keyPoints.length > 0 && (
-        <div className="journal-card p-8 mb-8">
-           <h2 className="text-[10px] font-sans font-extrabold uppercase tracking-[0.3em] text-muted-foreground/40 mb-8 flex items-center gap-3">
-             <span className="w-8 h-[1px] bg-white/10" /> STRUCTURED ANALYSIS
-          </h2>
-          <ul className="space-y-8">
-            {reel.keyPoints.map((point, i) => (
-              <li key={i} className="flex gap-6 group">
-                <span className="text-2xl font-sans font-extrabold text-white/10 group-hover:text-primary/40 transition-colors mt-[-4px]">0{i + 1}</span>
-                <span className="text-base leading-relaxed font-sans text-white/80">{point}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Actionable Tips */}
-      {reel.actionableTips.length > 0 && (
-        <div className="journal-card p-8 mb-8 bg-[#0A0A0A] border-white/5">
-          <h2 className="text-[10px] font-sans font-extrabold uppercase tracking-[0.3em] text-primary mb-8 flex items-center gap-3">
-             <span className="w-8 h-[1px] bg-primary/20" /> OPERATIONAL DIRECTIVES
-          </h2>
-          <div className="space-y-4">
-            {reel.actionableTips.map((tip, i) => (
-              <div key={i} className="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
-                <p className="text-base leading-relaxed font-sans text-white/90 italic">"{tip}"</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Tools & Concepts */}
-      {reel.toolsConcepts.length > 0 && (
-        <div className="journal-card p-8 mb-8">
-          <h2 className="text-[10px] font-sans font-extrabold uppercase tracking-[0.3em] text-muted-foreground/40 mb-6 flex items-center gap-3">
-             <span className="w-8 h-[1px] bg-white/10" /> LEXICON & TOOLING
-          </h2>
-          <div className="flex flex-wrap gap-3">
-            {reel.toolsConcepts.map((tool) => (
-              <span
-                key={tool}
-                className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-sans font-bold text-white uppercase tracking-wider"
-              >
-                {tool}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Short Explanation */}
-      {reel.shortExplanation && (
-        <div className="index-card p-6 mb-10 bg-library-bg/50 border-dashed">
-          <h2 className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-4">
-            Explanatory Addendum
-          </h2>
-          <p className="text-xs leading-relaxed font-mono text-muted-foreground">
-            {reel.shortExplanation}
-          </p>
-        </div>
-      )}
-
-      {/* Tags */}
-      {reel.tags.length > 0 && (
-        <div className="mb-12 py-10 border-t border-white/5">
-          <div className="flex flex-wrap justify-center gap-4">
-            {reel.tags.map((tag) => (
-              <span
-                key={tag}
-                className="text-[11px] font-sans font-extrabold uppercase tracking-[0.2em] text-primary italic"
-              >
-                #{tag}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Transcript (collapsible) */}
+      {/* Transcript */}
       {reel.transcript && (
-        <div className="index-card border-x-0 border-b-0">
+        <section className="mt-16 border-t border-border/30 pt-8">
           <button
             onClick={() => setShowTranscript(!showTranscript)}
-            className="w-full p-5 text-left flex items-center justify-between group"
+            className="w-full velvet-card p-6 text-left flex items-center justify-between group transition-all hover:border-primary/20"
           >
-            <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground group-hover:text-white transition-colors">
-              Raw Source Transcript
-            </span>
-            <span className="text-[10px] font-mono text-primary font-bold">
-              [{showTranscript ? "-" : "+"}]
-            </span>
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-white/[0.03] flex items-center justify-center">
+                <BookOpen className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                  Full Transcript
+                </h3>
+                <span className="text-xs text-muted-foreground">Click to {showTranscript ? "hide" : "expand"}</span>
+              </div>
+            </div>
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${showTranscript ? "bg-primary text-primary-foreground rotate-180" : "bg-white/[0.03] text-muted-foreground"}`}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+            </div>
           </button>
+
           {showTranscript && (
-            <div className="px-5 pb-8">
-              <div className="p-4 bg-library-bg border border-border text-[11px] font-mono text-muted-foreground leading-relaxed whitespace-pre-wrap selection:bg-primary/30">
+            <div className="mt-4 animate-in fade-in slide-in-from-top-4 duration-500">
+              <div className="velvet-card p-8 font-mono text-sm text-muted-foreground leading-loose whitespace-pre-wrap">
                 {reel.transcript}
               </div>
             </div>
           )}
-        </div>
+        </section>
       )}
     </div>
   );

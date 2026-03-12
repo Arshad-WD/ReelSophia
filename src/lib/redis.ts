@@ -17,6 +17,18 @@ function getRedisClient(): Redis {
     const redis = new Redis(redisUrl, {
         maxRetriesPerRequest: null, // Required for BullMQ
         enableReadyCheck: false,
+        retryStrategy(times) {
+            const delay = Math.min(times * 50, 2000);
+            return delay;
+        },
+    });
+
+    redis.on("error", (error) => {
+        console.error("[Redis] ❌ Connection error:", error.message);
+    });
+
+    redis.on("connect", () => {
+        console.log("[Redis] 🔌 Connected to server");
     });
 
     if (process.env.NODE_ENV !== "production") {

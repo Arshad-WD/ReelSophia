@@ -1,19 +1,15 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { NoteCard } from "@/components/note-card";
-import { Input } from "@/components/ui/input";
-import { Search, X } from "lucide-react";
+import { Search as SearchIcon, X, Database } from "lucide-react";
 
 interface Reel {
   id: string;
   title: string | null;
   summary: string | null;
-  mainIdea: string | null;
-  tags: string[];
   status: string;
   platform: string;
-  sourceUrl: string;
   createdAt: string;
   folder: { id: string; name: string; icon: string | null } | null;
 }
@@ -47,100 +43,97 @@ export default function SearchPage() {
     }
   }, []);
 
-  // Debounced search
-  const handleInputChange = (value: string) => {
-    setQuery(value);
-    const timer = setTimeout(() => handleSearch(value), 400);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (query) handleSearch(query);
+    }, 400);
     return () => clearTimeout(timer);
-  };
+  }, [query, handleSearch]);
 
   return (
-    <div className="px-5 pt-8 max-w-md mx-auto pb-24 min-h-screen">
+    <div className="pt-8 lg:pt-12 pb-32 px-5 lg:px-10 min-h-screen animate-in fade-in duration-500">
       {/* Header */}
-      <div className="mb-10">
-        <h1 className="text-3xl font-sans font-extrabold tracking-tighter text-white italic underline decoration-primary/40 underline-offset-8 uppercase mb-3">
-          RETRIEVAL
+      <header className="mb-8">
+        <h1 className="text-3xl lg:text-4xl font-bold text-foreground tracking-tight mb-1">
+          Search
         </h1>
-        <p className="text-[10px] text-muted-foreground font-sans font-bold uppercase tracking-[0.3em]">
-          QUERYING THE COLLECTIVE ARCHIVE
-        </p>
-      </div>
+        <p className="text-sm text-muted-foreground">Find insights across all your reels</p>
+      </header>
+
       {/* Search Input */}
-      <div className="mb-12">
+      <div className="mb-10">
         <div className="relative group">
-          <input
-            type="search"
-            placeholder="TYPE TO SEARCH..."
-            value={query}
-            onChange={(e) => handleInputChange(e.target.value)}
-            className="w-full h-16 bg-[#0A0A0A] !rounded-full border border-white/5 focus:border-primary/40 transition-all px-14 text-lg font-sans font-bold text-white placeholder:text-muted-foreground/20"
-            autoFocus
-          />
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/30 group-focus-within:text-primary transition-colors" />
-          {query && (
-            <button
-              onClick={() => {
-                setQuery("");
-                setResults([]);
-                setSearched(false);
-              }}
-              className="absolute right-6 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          )}
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/15 to-transparent rounded-2xl blur-lg opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
+          <div className="relative">
+            <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/40 group-focus-within:text-primary transition-colors z-10" />
+            <input
+              type="search"
+              placeholder="Search by title, content, or tags..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="w-full h-14 velvet-card bg-card/60 border-border/30 focus:border-primary/40 transition-all pl-14 pr-14 text-base font-medium text-foreground placeholder:text-muted-foreground/30 outline-none"
+              autoFocus
+            />
+            {query && (
+              <button
+                onClick={() => { setQuery(""); setResults([]); setSearched(false); }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-white/[0.04] flex items-center justify-center text-muted-foreground hover:text-foreground transition-all z-10"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Results */}
+      {/* States */}
       {loading && (
-        <div className="text-center py-12">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+        <div className="flex flex-col items-center justify-center py-20">
+          <div className="w-10 h-1 bg-primary rounded-full animate-shimmer mb-4" style={{ backgroundImage: "linear-gradient(90deg, transparent 0%, var(--primary) 50%, transparent 100%)" }} />
+          <p className="text-sm text-muted-foreground">Searching...</p>
         </div>
       )}
 
       {!loading && searched && results.length === 0 && (
-        <div className="journal-card p-12 text-center border-dashed border-2 bg-transparent">
-          <p className="text-5xl mb-6 text-muted-foreground opacity-20">NULL</p>
-          <p className="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
-            No matches found for &quot;{query}&quot;
+        <div className="velvet-card p-16 text-center">
+          <SearchIcon className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2 text-foreground">No results</h3>
+          <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+            No reels matched &quot;{query}&quot;. Try a different search term.
           </p>
         </div>
       )}
 
       {!loading && results.length > 0 && (
-        <div className="space-y-6">
-          <h2 className="text-[10px] font-sans font-extrabold text-primary mb-6 uppercase tracking-[0.3em] flex items-center gap-3">
-             <span className="w-8 h-[1px] bg-primary/20" /> {results.length} ENTRIES UNEARTHED
-          </h2>
-          <div className="space-y-3">
+        <section>
+          <div className="flex items-center gap-3 mb-6">
+            <h2 className="text-sm font-semibold text-foreground">
+              {results.length} result{results.length !== 1 ? "s" : ""}
+            </h2>
+            <div className="h-px flex-1 bg-border/30" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
             {results.map((reel) => (
               <NoteCard
                 key={reel.id}
                 id={reel.id}
                 title={reel.title}
                 summary={reel.summary}
-                mainIdea={reel.mainIdea}
-                tags={reel.tags}
                 status={reel.status}
                 platform={reel.platform}
-                sourceUrl={reel.sourceUrl}
-                createdAt={reel.createdAt}
-                folder={reel.folder}
+                createdAt={new Date(reel.createdAt)}
+                folderName={reel.folder?.name}
               />
             ))}
           </div>
-        </div>
+        </section>
       )}
 
       {!searched && !loading && (
-        <div className="text-center py-24 opacity-60">
-          <p className="text-6xl mb-8 font-sans font-extrabold italic text-white/5 uppercase tracking-tighter">ARCHIVE</p>
-          <p className="text-[10px] font-sans font-extrabold uppercase tracking-[0.3em] text-white/40">
-            AWAITING INPUT...
-          </p>
-          <p className="text-[9px] font-sans font-bold uppercase tracking-[0.2em] text-muted-foreground/30 mt-4 max-w-[200px] mx-auto leading-relaxed">
-            SEARCH TITLES, TAGS, AND CORE KNOWLEDGE ENTRIES
+        <div className="py-16 text-center">
+          <Database className="w-16 h-16 text-muted-foreground/10 mx-auto mb-4" />
+          <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+            Search across titles, summaries, transcripts, and tags to find any insight you&apos;ve extracted.
           </p>
         </div>
       )}

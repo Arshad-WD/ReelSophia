@@ -1,127 +1,114 @@
 "use client";
 
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { ProcessingStatus } from "./processing-status";
-import { ExternalLink } from "lucide-react";
+import { Instagram, Youtube, Clock, ChevronRight, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ProcessingStatus } from "./processing-status";
 
 interface NoteCardProps {
   id: string;
   title: string | null;
   summary: string | null;
-  mainIdea: string | null;
-  tags: string[];
-  status: string;
   platform: string;
-  sourceUrl: string;
-  createdAt: string;
-  folder?: { id: string; name: string; icon: string | null } | null;
-  job?: { status: string; progress: number; error: string | null } | null;
+  status: string;
+  createdAt: Date;
+  folderName?: string | null;
+  jobProgress?: number;
+  jobError?: string | null;
   className?: string;
 }
-
-const PLATFORM_COLORS = {
-  instagram: "from-pink-500/20 to-purple-500/20",
-  tiktok: "from-cyan-400/20 to-pink-500/20",
-  youtube: "from-red-500/20 to-orange-500/20",
-} as const;
 
 export function NoteCard({
   id,
   title,
   summary,
-  mainIdea,
-  tags,
-  status,
   platform,
-  sourceUrl,
+  status,
   createdAt,
-  folder,
-  job,
-  className,
+  folderName,
+  jobProgress,
+  jobError,
+  className
 }: NoteCardProps) {
-  const isProcessing = status !== "COMPLETED" && status !== "FAILED";
-  const gradientClass = PLATFORM_COLORS[platform as keyof typeof PLATFORM_COLORS] || PLATFORM_COLORS.youtube;
+  const isCompleted = status === "COMPLETED";
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    e.currentTarget.style.setProperty("--mouse-x", `${x}px`);
+    e.currentTarget.style.setProperty("--mouse-y", `${y}px`);
+  };
 
   return (
-    <Link href={status === "COMPLETED" ? `/note/${id}` : "#"}>
-      <div
-        className={cn(
-          "journal-card p-6 cursor-pointer group flex flex-col h-full bg-[#0A0A0A]",
-          isProcessing && "opacity-60 grayscale",
-          className
-        )}
-      >
-        {/* Header */}
-        <div className="flex items-start justify-between gap-3 mb-4">
-          <div className="flex-1 min-w-0">
-            <h3 className="font-sans font-bold text-xl leading-snug text-white group-hover:text-gradient transition-all duration-300 line-clamp-2">
-              {title || "Processing insight..."}
-            </h3>
-            {folder && (
-              <p className="text-[10px] font-sans font-semibold uppercase tracking-wider text-primary mt-1 opacity-80">
-                {folder.icon} {folder.name}
-              </p>
-            )}
-          </div>
-          <a
-            href={sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="text-muted-foreground hover:text-white transition-colors shrink-0 p-1 border border-transparent hover:border-border"
-            title="View Original"
-          >
-            <ExternalLink className="w-3 h-3" />
-          </a>
-        </div>
+    <div
+      onMouseMove={handleMouseMove}
+      className={cn(
+        "signature-card-hover spotlight-hover group p-9 flex flex-col min-h-[300px] animate-page-entry",
+        className
+      )}
+    >
+      {isCompleted && (
+        <Link
+          href={`/note/${id}`}
+          className="absolute inset-0 z-20 rounded-[inherit]"
+          aria-hidden="true"
+        />
+      )}
 
-        {/* Content */}
-        {status === "COMPLETED" ? (
-          <>
-            <p className="text-sm font-sans text-muted-foreground/80 leading-relaxed line-clamp-3 mb-6 flex-grow">
-              {mainIdea || summary}
-            </p>
-            {tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-auto">
-                {tags.slice(0, 4).map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-sans font-bold text-muted-foreground"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-                {tags.length > 4 && (
-                  <span className="text-[10px] font-sans font-bold text-primary px-1">
-                    +{tags.length - 4}
-                  </span>
-                )}
-              </div>
-            )}
-          </>
+      {/* Modern Platform Indicator */}
+      <div className="absolute top-6 right-6 z-30 opacity-40 group-hover:opacity-100 transition-opacity duration-700">
+        {platform === "instagram" ? (
+          <Instagram className="w-5 h-5 text-primary" />
         ) : (
-          <ProcessingStatus
-            status={job?.status || status}
-            progress={job?.progress}
-            error={job?.error}
-          />
+          <Youtube className="w-5 h-5 text-primary" />
         )}
-
-        {/* Footer */}
-        <div className="flex items-center justify-between mt-6 pt-4 border-t border-white/5">
-          <span className="text-[10px] font-sans font-bold text-muted-foreground/60 uppercase tracking-widest flex items-center gap-1.5">
-            <span className={cn("w-2 h-2 rounded-full", platform === "instagram" ? "bg-magenta-500" : platform === "tiktok" ? "bg-cyan-500" : "bg-red-500")} 
-                  style={platform === "instagram" ? { background: "var(--ig-gradient)" } : {}}
-            />
-            {platform}
-          </span>
-          <span className="text-[10px] font-sans font-medium text-muted-foreground/40">
-            {new Date(createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-          </span>
-        </div>
       </div>
-    </Link>
+
+      {/* Deluxe Meta Info */}
+      <div className="flex flex-col gap-1 mb-8 relative z-10">
+         {folderName && (
+           <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-primary/40">
+             {folderName}
+           </span>
+         )}
+         <span className="text-[10px] text-muted-foreground/30 font-mono" suppressHydrationWarning>
+           {new Date(createdAt).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}
+         </span>
+      </div>
+
+      {/* Editorial Content */}
+      <div className="flex-1 relative z-10">
+        {isCompleted ? (
+          <div className="space-y-4">
+            <h3 className="text-3xl font-heading text-foreground leading-[1.1] group-hover:text-primary transition-all duration-700 decoration-primary/20 group-hover:underline-offset-4 line-clamp-2">
+              {title || "Untitled Entry"}
+            </h3>
+            <p className="text-base text-muted-foreground/60 leading-relaxed line-clamp-3 font-sans opacity-80 group-hover:opacity-100 transition-all duration-700">
+              {summary || "An echo of intelligence captured for eternity..."}
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full">
+            <ProcessingStatus
+              status={status}
+              progress={jobProgress}
+              error={jobError}
+              className="w-full"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Deluxe Footer */}
+      {isCompleted && (
+        <div className="mt-auto flex items-center justify-between relative z-10 pt-6">
+          <div className="h-px w-8 bg-primary/20 group-hover:w-16 transition-all duration-700" />
+          <div className="w-10 h-10 rounded-full border border-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-all duration-700">
+            <ChevronRight className="w-4 h-4 text-primary group-hover:text-background transition-colors" />
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

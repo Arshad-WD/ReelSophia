@@ -7,9 +7,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Inter", var(--font-sans);
-  --font-serif: var(--font-serif);
-  --font-mono: var(--font-mono);
+  --font-sans: var(--font-sans), "Inter", sans-serif;
+  --font-heading: var(--font-heading), serif;
+  --font-mono: var(--font-mono), monospace;
 
   --color-ring: var(--ring);
   --color-input: var(--input);
@@ -28,134 +28,75 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
 
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
-  --radius-2xl: 0px;
-  --radius-3xl: 0px;
-  --radius-4xl: 0px;
+  --radius-sm: 10px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  --radius-xl: 40px;
 }
 
 :root {
-  /* Editorial Journal Theme (Instagram-Inspired) */
-  --background: oklch(0 0 0);
-  /* Pure Black #000000 */
-  --foreground: oklch(0.98 0 0);
-  /* Off-white #FAFAFA */
+  /* INSTAGRAM THEME DESIGN TOKENS */
+  --background: oklch(0.04 0.01 290);     /* Deepest midnight */
+  --foreground: oklch(0.98 0.01 290);     /* Pure silver light */
 
-  --card: oklch(0.15 0 0);
-  /* Very Dark Grey #121212 */
-  --card-foreground: oklch(0.98 0 0);
+  --card: oklch(0.08 0.02 290 / 0.3);    /* High-end glass transparency */
+  --card-foreground: oklch(0.98 0.01 290);
 
-  --popover: oklch(0.12 0 0);
-  --popover-foreground: oklch(0.98 0 0);
+  /* Instagram Gradient Primary Colors */
+  --primary: oklch(0.55 0.23 350);        /* Deep Pink/Magenta */
+  --primary-foreground: oklch(0.98 0.01 290);
 
-  --primary: oklch(0.65 0.25 20);
-  /* IG-like Magenta-ish base */
-  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.12 0.04 290 / 0.8);
+  --secondary-foreground: oklch(0.90 0.02 290);
 
-  --secondary: oklch(0.25 0 0);
-  /* Mid-grey for secondary elements */
-  --secondary-foreground: oklch(0.90 0 0);
+  --muted: oklch(0.10 0.02 290);
+  --muted-foreground: oklch(0.50 0.03 290);
 
-  --muted: oklch(0.20 0 0);
-  --muted-foreground: oklch(0.60 0 0);
-  /* Mid-grey text */
+  /* Secondary Accent from IG Gradient */
+  --accent: oklch(0.68 0.20 50);          /* Orange/Yellow */
+  --ring: oklch(0.55 0.23 350 / 0.3);
 
-  --accent: oklch(0.60 0.15 250);
-  /* Subtle Blue accent for links/active */
-  --accent-foreground: oklch(0.98 0 0);
-
-  --destructive: oklch(0.55 0.20 25);
-
-  --border: oklch(0.20 0 0);
-  /* Subtle border #262626 */
-  --input: oklch(0.15 0 0);
-  --ring: oklch(0.65 0.25 20);
-
-  --radius: 1.25rem;
-  /* Soft rounded corners (IG style) */
-
-  /* Branding Gradients */
-  --ig-gradient: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-  --journal-gradient: linear-gradient(135deg, oklch(0.65 0.25 20) 0%, oklch(0.55 0.20 340) 100%);
+  --radius: 2rem;
 }
 
-@utility journal-card {
-  @apply bg-card border border-border relative transition-all duration-500 rounded-[var(--radius)];
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+/* ── Deluxe Signature Surface ── */
+@utility signature-card {
+  @apply bg-card backdrop-blur-[40px] relative transition-all duration-1000;
+  border: 1px solid oklch(1 0 0 / 0.06); /* Precise inner glass stroke */
+  border-radius: 3rem 1rem 3rem 1.5rem; /* Sophisticated organic curves */
+  box-shadow: 
+    0 32px 64px -16px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
 
+@utility signature-card-hover {
+  @apply signature-card;
   &:hover {
-    @apply border-primary/40;
-    transform: translateY(-4px);
-    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+    @apply -translate-y-2 scale-[1.005];
+    border-color: var(--color-primary);
+    box-shadow: 
+      0 48px 80px -24px rgba(0, 0, 0, 0.8),
+      0 0 30px oklch(0.55 0.23 350 / 0.15); /* Ethereal primary glow */
   }
 }
 
-@utility story-ring {
-  @apply rounded-full p-[2.5px] inline-block transition-transform duration-300;
-  background: var(--ig-gradient);
-
-  &:active {
-    transform: scale(0.92);
-  }
-}
-
-@utility story-ring-inner {
-  @apply bg-background rounded-full p-[2px] flex items-center justify-center;
-}
-
-@utility btn-journal-primary {
-  @apply relative overflow-hidden text-white font-sans font-bold px-8 py-4 rounded-full transition-all active:scale-95;
-  background: var(--ig-gradient);
-  box-shadow: 0 4px 15px rgba(220, 39, 67, 0.3);
+/* ── Signature Buttons ── */
+@utility btn-signature {
+  @apply relative overflow-hidden font-bold px-12 py-5 rounded-full transition-all duration-700 flex items-center justify-center gap-4 text-xs tracking-[0.2em] uppercase;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
 
   &:hover:not(:disabled) {
-    @apply brightness-110 -translate-y-0.5;
-    box-shadow: 0 6px 20px rgba(220, 39, 67, 0.4);
+    @apply -translate-y-1 shadow-2xl scale-[1.02];
+    background: white; /* Dramatic color shift for deluxe feel */
+    box-shadow: 0 20px 40px rgba(255, 255, 255, 0.1);
   }
 
-  &:disabled {
-    @apply grayscale opacity-50 cursor-not-allowed;
+  &:active:not(:disabled) {
+    @apply translate-y-0 scale-[0.97];
   }
 }
-
-@utility editorial-input {
-  @apply bg-[#1a1a1a] border-none px-6 py-4 rounded-[var(--radius)] focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-sans text-lg placeholder:text-muted-foreground;
-}
-
-@utility text-gradient {
-  background: var(--ig-gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-@utility index-card {
-  @apply journal-card;
-}
-
-@utility glass-card {
-  @apply journal-card;
-}
-
-@utility glass {
-  @apply journal-card;
-}
-
-@utility glass-strong {
-  @apply journal-card;
-}
-
-@utility btn-academic-primary {
-  @apply btn-journal-primary;
-}
-
-@utility ribbon {
-  @apply absolute top-0 left-0 w-1.5 h-full bg-primary;
-}
-
 
 @layer base {
   * {
@@ -163,92 +104,150 @@
   }
 
   body {
-    @apply bg-background text-foreground;
-    background-image: radial-gradient(circle at top right, oklch(0.65 0.25 20 / 10%), transparent 40%),
-      radial-gradient(circle at bottom left, oklch(0.60 0.15 250 / 8%), transparent 35%);
-    background-attachment: fixed;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    @apply bg-background text-foreground relative min-h-screen overflow-x-hidden;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    
+    /* Ethereal Mesh Background - Slower, more integrated */
+    &::before {
+      content: "";
+      position: fixed;
+      inset: -50%;
+      z-index: -10;
+      background-image: 
+        radial-gradient(circle at 10% 20%, oklch(0.55 0.23 350 / 10%) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, oklch(0.68 0.20 50 / 8%) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, oklch(0.40 0.18 310 / 8%) 0%, transparent 60%);
+      filter: blur(120px);
+      animation: mesh-move 30s ease-in-out infinite alternate;
+    }
   }
 
-  html {
-    @apply font-sans;
-  }
-
-  h1,
-  h2,
-  h3 {
-    @apply font-sans tracking-tight font-extrabold text-white uppercase italic underline decoration-primary/40 underline-offset-8;
-  }
-
-  h4,
-  h5,
-  h6 {
-    @apply font-sans font-bold text-white;
-  }
-
-  ::selection {
-    @apply bg-primary/30 text-white;
+  h1, h2, h3, h4 {
+    @apply font-heading tracking-tight leading-[1.05] text-balance;
   }
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
+@keyframes mesh-move {
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  50% { transform: translate(3%, 1%) rotate(2deg) scale(1.05); }
+  100% { transform: translate(-1%, 3%) rotate(-1deg) scale(1.02); }
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.4s ease-out forwards;
-}
-
-/* Scrollbar */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--background);
-  border-left: 1px solid var(--border);
+  @apply bg-transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: oklch(0.35 0.01 70);
+  @apply bg-white/5 rounded-full hover:bg-white/10 transition-colors;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
+/* Utility Scrollbar Hiders */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-/* Safe area for PWA */
-.safe-top {
-  padding-top: env(safe-area-inset-top);
+/* Animations */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0px); }
 }
 
-.safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom);
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
-/* Status colors (muted academic tones) */
-.status-pending {
-  color: oklch(0.65 0.16 80);
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(225, 48, 108, 0.2); }
+  50% { box-shadow: 0 0 20px rgba(225, 48, 108, 0.4); }
 }
 
-.status-processing {
-  color: oklch(0.65 0.16 60);
+@keyframes shimmer-amber {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
-.status-completed {
-  color: oklch(0.60 0.12 160);
-  /* Sage Green */
+@keyframes breath-glow {
+  0%, 100% { opacity: 0.5; filter: blur(40px); transform: scale(1); }
+  50% { opacity: 0.8; filter: blur(60px); transform: scale(1.1); }
 }
 
-.status-failed {
-  color: oklch(0.55 0.20 25);
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }
+
+.animate-shimmer {
+  animation: shimmer 2s linear infinite;
+  background-size: 200% 100%;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-shimmer-amber {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(225, 48, 108, 0.2) 20%,
+    rgba(225, 48, 108, 0.6) 50%,
+    rgba(253, 29, 29, 0.4) 80%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-amber 2.5s infinite linear;
+}
+
+.animate-breath-glow {
+  animation: breath-glow 4s ease-in-out infinite;
+}
+
+/* Fade mask for horizontal scroll */
+.mask-fade-right {
+  mask-image: linear-gradient(to right, black 80%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
+}
+
+/* Hide Clerk Development Mode */
+.cl-internal-kq110m,
+[class*="cl-internal-"],
+.cl-dev-mode,
+.cl-footer,
+div[data-clerk-version] + div {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+/* Final Performance & Visual Polish */
+.animate-float, .animate-pulse-glow, .animate-shimmer-amber, .animate-breath-glow { will-change: transform, opacity; transform: translateZ(0); }
+[class*='cl-'] > div:last-child:has(a[href*='clerk.com']) { display: none !important; opacity: 0 !important; height: 0 !important; pointer-events: none !important; visibility: hidden !important; }
+.cl-dev-mode, .cl-internal-kq110m, [class*='cl-internal-'] { display: none !important; }
+
+/* Spotlight Hover Effect - Standard CSS */
+.spotlight-hover { position: relative; overflow: hidden; }
+.spotlight-hover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(800px circle at var(--mouse-x, 0) var(--mouse-y, 0), rgba(225, 48, 108, 0.08), transparent 40%);
+  opacity: 0;
+  transition: opacity 0.5s;
+  z-index: 1;
+  pointer-events: none;
+}
+.spotlight-hover:hover::before { opacity: 1; }
+
+@keyframes page-entry { from { opacity: 0; transform: translateY(20px) scale(0.98); filter: blur(10px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
+.animate-page-entry { animation: page-entry 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+

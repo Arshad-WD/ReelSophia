@@ -204,3 +204,40 @@ Respond with valid JSON only:
         throw new Error("Failed to parse AI response");
     }
 }
+
+/**
+ * AI Categorization — Suggests a folder name and icon for a reel.
+ */
+export async function suggestCategory(
+    transcript: string,
+    summary: string,
+    customApiKey?: string
+): Promise<{ name: string; icon: string }> {
+    const systemPrompt = `You are a content organizer. Categorize this video into a single high-level folder.
+Respond with valid JSON only:
+{
+  "name": "Single word category name (e.g. Tech, Food, Finance, Health, AI, Coding, Business, Entertainment)",
+  "icon": "A single matching emoji (e.g. 💻, 🍔, 💰, 🏥, 🤖, 🔨, 📈, 🎨)"
+}`;
+
+    const userMessage = `Title/Summary: ${summary}\n\nTranscript Preview: ${transcript.slice(0, 500)}`;
+
+    const result = await callOpenRouter(
+        [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userMessage },
+        ],
+        150,
+        customApiKey
+    );
+
+    try {
+        const parsed = JSON.parse(result);
+        return {
+            name: parsed.name || "General",
+            icon: parsed.icon || "📁",
+        };
+    } catch {
+        return { name: "General", icon: "📁" };
+    }
+}

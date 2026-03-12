@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, Key, Loader2, Save, Trash } from "lucide-react";
+import { Key, Loader2, Trash } from "lucide-react";
 
 export function ApiKeySettings({ initialKey = "" }: { initialKey?: string }) {
     const [apiKey, setApiKey] = useState(initialKey);
@@ -23,10 +23,11 @@ export function ApiKeySettings({ initialKey = "" }: { initialKey?: string }) {
                 throw new Error(data.error || "Failed to update API key");
             }
 
-            setMessage({ text: keyToSave ? "API Key saved successfully" : "API Key removed", type: "success" });
+            setMessage({ text: keyToSave ? "API key saved" : "API key removed", type: "success" });
             if (!keyToSave) setApiKey("");
-        } catch (error: any) {
-            setMessage({ text: error.message, type: "error" });
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : "Unknown error";
+            setMessage({ text: msg, type: "error" });
         } finally {
             setIsSaving(false);
             setTimeout(() => setMessage(null), 3000);
@@ -34,54 +35,51 @@ export function ApiKeySettings({ initialKey = "" }: { initialKey?: string }) {
     };
 
     return (
-        <div className="journal-card p-8 mb-8 bg-[#050505] border-white/5">
-            <h2 className="text-[10px] font-sans font-extrabold uppercase tracking-[0.3em] text-muted-foreground/40 mb-8 flex items-center gap-3">
-               <span className="w-8 h-[1px] bg-white/10" /> AUTONOMOUS KEY
-            </h2>
-            
-            <p className="text-xs font-sans font-bold uppercase tracking-[0.1em] text-muted-foreground/60 leading-relaxed mb-8 border-l-2 border-primary pl-6">
-                Configure a personal OpenRouter API key to bypass communal rate limits. 
-                Processing will be logged directly to your autonomous account.
-            </p>
-
-            <div className="flex flex-col gap-4 mt-2">
-                <div className="space-y-6">
-                    <label className="text-[10px] font-sans font-extrabold uppercase tracking-[0.3em] text-muted-foreground/30">ENCRYPTED AUTH TOKEN</label>
-                    <div className="flex flex-col gap-4">
-                        <input
-                            type="password"
-                            placeholder="sk-or-v1-..."
-                            value={apiKey}
-                            onChange={(e) => setApiKey(e.target.value)}
-                            className="editorial-input w-full h-14 !rounded-full bg-white/5 !border-white/5 px-6 font-sans font-bold text-white focus:!border-primary/40 transition-all"
-                        />
-                        <div className="flex gap-4">
-                            <button
-                                onClick={() => handleSave(apiKey)}
-                                disabled={isSaving || !apiKey.trim()}
-                                className="btn-journal-primary flex-1 py-4 text-xs tracking-widest"
-                            >
-                                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "COMMIT KEY"}
-                            </button>
-                            {apiKey && (
-                                <button
-                                    onClick={() => handleSave("")}
-                                    disabled={isSaving}
-                                    className="p-4 rounded-xl border border-white/5 bg-white/5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all flex items-center justify-center"
-                                    title="Revoke Key"
-                                >
-                                    <Trash className="w-5 h-5" />
-                                </button>
-                            )}
-                        </div>
-                    </div>
+        <div className="velvet-card p-6">
+            <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Key className="w-4 h-4 text-primary" />
                 </div>
-                {message && (
-                    <p className={`text-[10px] font-sans font-extrabold uppercase tracking-[0.2em] text-center mt-4 ${message.type === "success" ? "text-green-400" : "text-primary"}`}>
-                        {message.text}
-                    </p>
-                )}
+                <div>
+                    <h2 className="text-sm font-semibold text-foreground">OpenRouter API Key</h2>
+                    <p className="text-xs text-muted-foreground">Use your own key for unlimited processing</p>
+                </div>
             </div>
+
+            <div className="space-y-4">
+                <input
+                    type="password"
+                    placeholder="sk-or-v1-..."
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    className="w-full h-12 bg-white/[0.03] border border-border/30 rounded-xl px-4 font-mono text-sm text-foreground focus:border-primary/40 outline-none transition-all"
+                />
+                <div className="flex gap-3">
+                    <button
+                        onClick={() => handleSave(apiKey)}
+                        disabled={isSaving || !apiKey.trim()}
+                        className="btn-primary flex-1 py-3 text-sm"
+                    >
+                        {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Key"}
+                    </button>
+                    {apiKey && (
+                        <button
+                            onClick={() => handleSave("")}
+                            disabled={isSaving}
+                            className="p-3 rounded-xl border border-border/30 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
+                            title="Remove Key"
+                        >
+                            <Trash className="w-4 h-4" />
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {message && (
+                <p className={`text-xs text-center mt-4 font-medium ${message.type === "success" ? "text-green-400" : "text-destructive"}`}>
+                    {message.text}
+                </p>
+            )}
         </div>
     );
 }
