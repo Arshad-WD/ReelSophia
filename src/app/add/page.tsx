@@ -198,9 +198,9 @@ export default function AddReelPage() {
                   className="flex items-center justify-between w-full h-16 px-5 group"
                   disabled={!!processing}
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
                     <div className={cn(
-                      "w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-300",
+                      "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300",
                       selectedFolder ? "bg-primary/10 text-primary border border-primary/20" : "bg-white/5 text-muted-foreground border border-white/10 group-hover:bg-white/10"
                     )}>
                       {selectedFolder && selectedFolder.icon ? (
@@ -209,8 +209,8 @@ export default function AddReelPage() {
                          <FolderPlus className="w-5 h-5" />
                       )}
                     </div>
-                    <div className="text-left flex flex-col justify-center">
-                      <span className="text-[15px] font-semibold text-foreground group-hover:text-primary transition-colors duration-300">
+                    <div className="text-left flex flex-col justify-center flex-1 min-w-0">
+                      <span className="text-[15px] font-semibold text-foreground group-hover:text-primary transition-colors duration-300 truncate w-full">
                         {selectedFolder ? selectedFolder.name : "General (Uncategorized)"}
                       </span>
                     </div>
