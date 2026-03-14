@@ -68,7 +68,7 @@ export async function processReelInline(data: {
     aiSettings?: AISettings;
 }) {
     const { reelId, userId, sourceUrl, platform, aiSettings } = data;
-    console.log(`[Inline] 🏁 STARTING EXTRACTION V4 (Robust HTTP) for Reel: ${reelId}`);
+    console.log(`[Inline] 🏁 STARTING EXTRACTION V4.2 (Robust Transcript) for Reel: ${reelId}`);
     const openRouterKey = aiSettings?.keys?.openrouter;
     const tempDir = path.join(os.tmpdir(), "reelsophia", reelId);
 
@@ -349,7 +349,15 @@ export async function processReelInline(data: {
             try {
                 console.log(`[Inline] Attempting youtube-transcript (HTTP)`);
                 const { YoutubeTranscript } = await import("youtube-transcript");
-                const transcriptData = await YoutubeTranscript.fetchTranscript(sourceUrl);
+                
+                // Must extract the actual video ID for youtube-transcript to work reliably
+                const extractId = (url: string) => {
+                    const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/);
+                    return (match && match[2].length === 11) ? match[2] : url;
+                };
+                const videoId = extractId(sourceUrl);
+                
+                const transcriptData = await YoutubeTranscript.fetchTranscript(videoId);
                 rawTranscript = transcriptData.map(t => t.text).join(" ").trim();
                 
                 if (rawTranscript.length > 50) {
