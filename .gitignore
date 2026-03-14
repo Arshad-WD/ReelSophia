@@ -33,6 +33,11 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# test and temporary scripts
+test-*.js
+tmp-*.js
+*.log
+
 # vercel
 .vercel
 
