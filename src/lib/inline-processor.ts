@@ -83,27 +83,38 @@ export async function processReelInline(data: {
         let metadata = { title: "", description: "", uploader: "" };
         try {
             console.log(`[Inline] Extracting metadata for: ${sourceUrl}`);
-            // USE python3 and capture stderr for better debugging on Linux/Render
-            const metaCmd = `python3 -m yt_dlp "${sourceUrl}" --print "%(title)s|||%(description)s|||%(uploader)s" --no-playlist --quiet --no-warnings`;
-            const { stdout, stderr } = await execAsync(metaCmd, { timeout: 30000 });
             
-            if (stderr) console.warn(`[Inline] Metadata Extraction stderr:`, stderr);
-            
-            if (stdout) {
-                const parts = stdout.trim().split("|||");
-                if (parts.length >= 1) metadata.title = parts[0] || "";
-                if (parts.length >= 2) metadata.description = parts[1] || "";
-                if (parts.length >= 3) metadata.uploader = parts[2] || "";
-                
-                console.log(`[Inline] Metadata extracted: ${metadata.title}`);
+            // Attempt 1: oEmbed (Pure HTTP, never blocked)
+            if (platform === "youtube") {
+                try {
+                    const oEmbedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(sourceUrl)}&format=json`;
+                    const res = await fetch(oEmbedUrl);
+                    if (res.ok) {
+                        const data = await res.json();
+                        metadata.title = data.title || "";
+                        metadata.uploader = data.author_name || "";
+                        console.log(`[Inline] ✅ Got metadata via oEmbed: ${metadata.title}`);
+                    }
+                } catch (oeErr) {
+                    console.warn(`[Inline] oEmbed failed, falling back to yt-dlp`);
+                }
+            }
+
+            // Attempt 2: yt-dlp (Fallback)
+            if (!metadata.title) {
+                const metaCmd = `python3 -m yt_dlp "${sourceUrl}" --print "%(title)s|||%(description)s|||%(uploader)s" --no-playlist --quiet --no-warnings`;
+                const { stdout, stderr } = await execAsync(metaCmd, { timeout: 30000 });
+                if (stdout) {
+                    const parts = stdout.trim().split("|||");
+                    if (parts.length >= 1) metadata.title = parts[0] || "";
+                    if (parts.length >= 2) metadata.description = parts[1] || "";
+                    if (parts.length >= 3) metadata.uploader = parts[2] || "";
+                    console.log(`[Inline] ✅ Got metadata via yt-dlp: ${metadata.title}`);
+                }
             }
         } catch (metaErr: any) {
-            console.warn(`[Inline] Metadata extraction failed:`, metaErr.stderr || metaErr.message);
-            // Save the error to the job so the user can see it in logs
-            await db.processingJob.update({
-                where: { reelId },
-                data: { error: `Metadata stage failed: ${metaErr.message.slice(0, 200)}` }
-            });
+            console.warn(`[Inline] Metadata Extraction failed:`, metaErr.message);
+            // Non-critical if we can still get the transcript later
         }
 
         // Stage 1: Download video using python -m yt_dlp (works even when yt-dlp isn't on PATH)
@@ -314,59 +325,63 @@ export async function processReelInline(data: {
         await updateJobStatus(reelId, "TRANSCRIBING", 40);
         console.log(`[Inline] Transcribing reel ${reelId}`);
 
-        const deepgramKey = process.env.DEEPGRAM_API_KEY;
-        console.log(`[Inline] API Keys: OpenRouter=${!!process.env.OPENROUTER_API_KEY}, Deepgram=${!!deepgramKey}`);
-
         let rawTranscript = "";
         let transcriptionMethod = "";
 
-        // Attempt 1: Check for auto-generated subtitles (completely free)
-        try {
-            console.log(`[Inline] Attempting to fetch auto-generated subtitles`);
-            const subCmd = `python -m yt_dlp "${sourceUrl}" --write-auto-subs --skip-download -o "${path.join(tempDir, "subs")}" --sub-format "vtt" --no-warnings`;
-            await execAsync(subCmd, { timeout: 30000 });
-            
-            const files = await fs.readdir(tempDir);
-            const subFile = files.find(f => f.includes(".vtt"));
-            if (subFile) {
-                const content = await fs.readFile(path.join(tempDir, subFile), "utf-8");
+        // Attempt 1: Fetch YouTube Transcript directly (Pure HTTP, very robust)
+        if (platform === "youtube") {
+            try {
+                console.log(`[Inline] Attempting youtube-transcript (HTTP)`);
+                const { YoutubeTranscript } = await import("youtube-transcript");
+                const transcriptData = await YoutubeTranscript.fetchTranscript(sourceUrl);
+                rawTranscript = transcriptData.map(t => t.text).join(" ").trim();
                 
-                // ROBUST VTT DEDUPLICATION:
-                // Auto-generated subtitles are often "rolling" (cumulative).
-                // We split into blocks and only keep a block if it's NOT a prefix of the next one.
-                const blocks = content.split(/\r?\n\r?\n/)
-                    .filter(b => !b.includes("WEBVTT") && b.includes("-->"))
-                    .map(b => b.split(/\r?\n/).slice(1).join(" ").replace(/<\/?.*?>/g, "").replace(/\s+/g, " ").trim())
-                    .filter(t => t.length > 0);
-
-                const deduplicated: string[] = [];
-                for (let i = 0; i < blocks.length; i++) {
-                    const current = blocks[i];
-                    const next = blocks[i + 1];
-                    
-                    // If current is just the start of the next block, skip it
-                    if (next && next.startsWith(current)) continue;
-                    
-                    // If the current block is identical to the last added one, skip it
-                    if (deduplicated.length > 0 && current === deduplicated[deduplicated.length - 1]) continue;
-                    
-                    deduplicated.push(current);
+                if (rawTranscript.length > 50) {
+                    transcriptionMethod = "YouTube Transcript (Direct)";
+                    console.log(`[Inline] ✅ Got transcript via youtube-transcript (${rawTranscript.length} chars)`);
                 }
-
-                rawTranscript = deduplicated.join(" ").trim();
-                    
-                if (rawTranscript.length > 20) {
-                    transcriptionMethod = "Auto-generated Subtitles";
-                    console.log(`[Inline] ✅ Got auto-generated subtitles (${rawTranscript.length} chars)`);
-                } else {
-                    rawTranscript = "";
-                }
+            } catch (ytErr: any) {
+                console.warn(`[Inline] youtube-transcript failed: ${ytErr.message}`);
             }
-        } catch (subErr: any) {
-            console.warn(`[Inline] Auto-subs failed: ${subErr.message}`);
         }
 
-        // Attempt 2: Use Deepgram if key is present and auto-subs failed
+        // Attempt 2: Auto-generated subtitles via yt-dlp
+        if (!rawTranscript) {
+            try {
+                console.log(`[Inline] Attempting yt-dlp auto-subs`);
+                const subCmd = `python3 -m yt_dlp "${sourceUrl}" --write-auto-subs --skip-download -o "${path.join(tempDir, "subs")}" --sub-format "vtt" --no-warnings`;
+                await execAsync(subCmd, { timeout: 45000 });
+                
+                const files = await fs.readdir(tempDir);
+                const subFile = files.find(f => f.includes(".vtt"));
+                if (subFile) {
+                    const content = await fs.readFile(path.join(tempDir, subFile), "utf-8");
+                    const blocks = content.split(/\r?\n\r?\n/)
+                        .filter(b => !b.includes("WEBVTT") && b.includes("-->"))
+                        .map(b => b.split(/\r?\n/).slice(1).join(" ").replace(/<\/?.*?>/g, "").replace(/\s+/g, " ").trim())
+                        .filter(t => t.length > 0);
+
+                    const deduplicated: string[] = [];
+                    for (let i = 0; i < blocks.length; i++) {
+                        const current = blocks[i];
+                        const next = blocks[i + 1];
+                        if (next && next.startsWith(current)) continue;
+                        if (deduplicated.length > 0 && current === deduplicated[deduplicated.length - 1]) continue;
+                        deduplicated.push(current);
+                    }
+                    rawTranscript = deduplicated.join(" ").trim();
+                    if (rawTranscript.length > 20) {
+                        transcriptionMethod = "Auto-generated Subtitles (yt-dlp)";
+                        console.log(`[Inline] ✅ Got subtitles via yt-dlp`);
+                    }
+                }
+            } catch (subErr: any) {
+                console.warn(`[Inline] yt-dlp auto-subs failed`);
+            }
+        }
+
+        // Attempt 3: Use Deepgram if key is present and previous steps failed
+        const deepgramKey = process.env.DEEPGRAM_API_KEY;
         if (!rawTranscript && audioExtracted && deepgramKey) {
             try {
                 console.log(`[Inline] Using Deepgram for transcription`);
