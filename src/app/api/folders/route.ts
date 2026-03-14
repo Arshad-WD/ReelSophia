@@ -12,7 +12,7 @@ export async function GET() {
         }
         const userId = session.id;
 
-        const folders = await (prisma as any).folder.findMany({
+        const folders = await prisma.folder.findMany({
             where: { userId },
             include: {
                 _count: { select: { reels: true } },
@@ -23,6 +23,15 @@ export async function GET() {
         return NextResponse.json({ folders });
     } catch (error: any) {
         console.error("GET /api/folders error:", error);
+        
+        // Return more specific error info if it's a Prisma issue
+        if (error.code === "P1001" || error.name === "PrismaClientInitializationError") {
+          return NextResponse.json(
+            { error: "Database connection failed. Please check your DATABASE_URL.", details: error.message },
+            { status: 503 }
+          );
+        }
+
         return NextResponse.json(
             { error: "Internal server error", details: error?.message || "Unknown error" },
             { status: 500 }
@@ -51,14 +60,14 @@ export async function POST(req: NextRequest) {
         }
 
         // Ensure user exists
-        await (prisma as any).user.upsert({
+        await prisma.user.upsert({
             where: { id: userId },
             update: {},
             create: { id: userId, email: session.email, name: session.name },
         });
 
         // Check for duplicate folder name
-        const existing = await (prisma as any).folder.findFirst({
+        const existing = await prisma.folder.findFirst({
             where: { userId, name },
         });
 
@@ -69,13 +78,21 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const folder = await (prisma as any).folder.create({
+        const folder = await prisma.folder.create({
             data: { userId, name, icon },
         });
 
         return NextResponse.json({ folder }, { status: 201 });
     } catch (error: any) {
         console.error("POST /api/folders error:", error);
+        
+        if (error.code === "P1001" || error.name === "PrismaClientInitializationError") {
+          return NextResponse.json(
+            { error: "Database connection failed. Please check your DATABASE_URL.", details: error.message },
+            { status: 503 }
+          );
+        }
+
         return NextResponse.json(
             { error: "Internal server error", details: error?.message || "Unknown error" },
             { status: 500 }

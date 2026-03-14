@@ -34,12 +34,12 @@ export async function POST(req: NextRequest) {
         const url = sanitize(result.data.url.trim());
         const folderId = result.data.folderId || null;
 
-        let userDb = await (prisma as any).user.findUnique({
+        let userDb = await prisma.user.findUnique({
             where: { id: userId },
         });
 
         if (!userDb) {
-            userDb = await (prisma as any).user.create({
+            userDb = await prisma.user.create({
                 data: { id: userId, email: session.email, name: session.name },
             });
         }
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Duplicate detection — check if URL already processed by this user
-        const existing = await (prisma as any).reel.findUnique({
+        const existing = await prisma.reel.findUnique({
             where: {
                 userId_sourceUrl: {
                     userId,
@@ -99,13 +99,13 @@ export async function POST(req: NextRequest) {
 
             // If it's a placeholder/failed, delete it and start fresh
             console.log(`[API] Re-processing placeholder reel ${existing.id}`);
-            await (prisma as any).processingJob.deleteMany({ where: { reelId: existing.id } });
-            await (prisma as any).reel.delete({ where: { id: existing.id } });
+            await prisma.processingJob.deleteMany({ where: { reelId: existing.id } });
+            await prisma.reel.delete({ where: { id: existing.id } });
         }
 
         // Validate folder belongs to user if provided
         if (folderId) {
-            const folder = await (prisma as any).folder.findFirst({
+            const folder = await prisma.folder.findFirst({
                 where: { id: folderId, userId },
             });
             if (!folder) {
@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Create reel record
-        const reel = await (prisma as any).reel.create({
+        const reel = await prisma.reel.create({
             data: {
                 userId,
                 folderId,
@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
         });
 
         // Create processing job record
-        await (prisma as any).processingJob.create({
+        await prisma.processingJob.create({
             data: {
                 reelId: reel.id,
                 status: "PENDING",
@@ -186,7 +186,7 @@ export async function GET(req: NextRequest) {
         if (status) where.status = status;
 
         const [reels, total] = await Promise.all([
-            (prisma as any).reel.findMany({
+            prisma.reel.findMany({
                 where,
                 include: {
                     folder: { select: { id: true, name: true, icon: true } },
@@ -196,12 +196,20 @@ export async function GET(req: NextRequest) {
                 take: Math.min(limit, 50),
                 skip: offset,
             }),
-            (prisma as any).reel.count({ where }),
+            prisma.reel.count({ where }),
         ]);
 
         return NextResponse.json({ reels, total, limit, offset });
     } catch (error: any) {
         console.error("GET /api/reels error:", error);
+
+        if (error.code === "P1001" || error.name === "PrismaClientInitializationError") {
+          return NextResponse.json(
+            { error: "Database connection failed. Please check your DATABASE_URL.", details: error.message },
+            { status: 503 }
+          );
+        }
+
         return NextResponse.json(
             { error: "Internal server error", details: error?.message || "Unknown error" },
             { status: 500 }
