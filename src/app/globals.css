@@ -169,17 +169,34 @@
 }
 
 @keyframes breath-glow {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
+  0%, 100% { opacity: 0.3; filter: blur(100px) scale(1); }
+  50% { opacity: 0.6; filter: blur(120px) scale(1.05); }
 }
 .animate-breath-glow {
-  animation: breath-glow 3s ease-in-out infinite;
-  will-change: opacity;
+  animation: breath-glow 8s ease-in-out infinite;
+  will-change: opacity, transform, filter;
+}
+
+@keyframes breath-slow {
+  0%, 100% { transform: translate(-50%, -10%) scale(1); opacity: 0.05; }
+  50% { transform: translate(-50%, -12%) scale(1.1); opacity: 0.1; }
+}
+.animate-breath-slow {
+  animation: breath-slow 15s ease-in-out infinite;
+}
+
+@keyframes ping-slow {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+.animate-ping-slow {
+  animation: ping-slow 3s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
 /* Scrollbar Optimization */
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-thumb { @apply bg-white/10 rounded-full; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { @apply bg-transparent; }
+::-webkit-scrollbar-thumb { @apply bg-white/5 rounded-full hover:bg-white/10 transition-colors; }
 
 .spotlight-hover::before {
   content: '';

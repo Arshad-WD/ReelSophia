@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { SignJWT } from "jose";
-import { cookies } from "next/headers";
+import { signToken, setAuthCookie } from "@/lib/auth-utils";
 
 const JWT_SECRET = process.env.JWT_SECRET || "sophia_secret_default_key";
 const COOKIE_NAME = "sophia_session";
@@ -41,20 +40,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Create session
-    const token = await new SignJWT({ id: user.id, email: user.email, name: user.name })
-      .setProtectedHeader({ alg: "HS256" })
-      .setIssuedAt()
-      .setExpirationTime("7d")
-      .sign(new TextEncoder().encode(JWT_SECRET));
-
-    const cookieStore = await cookies();
-    cookieStore.set(COOKIE_NAME, token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: "/",
-    });
+    const token = await signToken({ userId: user.id, email: user.email });
+    await setAuthCookie(token);
 
     return NextResponse.json({
       user: {

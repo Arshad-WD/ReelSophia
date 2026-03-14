@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Sparkles, BookOpen, Plus, ArrowRight, Search } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { LandingSection } from "@/components/landing-section";
 
 interface Reel {
   id: string;
@@ -66,6 +67,10 @@ export default function HomePage() {
 
   if (authLoading) {
     return <HomePageSkeleton />;
+  }
+
+  if (!user) {
+    return <LandingSection />;
   }
 
   // Combine fetched reels with optimistic ones, avoiding duplicates

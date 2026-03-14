@@ -16,6 +16,7 @@ export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,7 +61,8 @@ export function LoginForm() {
         toast.error(data.error || "Google Verification Failed");
       }
     } catch (error) {
-      toast.error("Auth System Offline");
+      console.error("Google Callback Error:", error);
+      toast.error("Auth System Offline - Check console for details");
     } finally {
       setLoading(false);
     }
@@ -76,16 +78,25 @@ export function LoginForm() {
     script.onload = () => {
       if (window.google) {
         window.google.accounts.id.initialize({
-          client_id: "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com", // Placeholder
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
           callback: handleGoogleCallback,
         });
+        setScriptLoaded(true);
       }
     };
   }, []);
 
   const triggerGoogle = () => {
-    if (window.google) {
-      window.google.accounts.id.prompt();
+    if (scriptLoaded && window.google) {
+      window.google.accounts.id.prompt((notification: any) => {
+        if (notification.isNotDisplayed()) {
+          console.warn("Google One Tap not displayed:", notification.getNotDisplayedReason());
+          toast.info("Select Google Protocol from the system prompt");
+          // Fallback if needed, but GS prompt is usually enough
+        }
+      });
+    } else {
+      toast.error("Security module initializing. Please wait...");
     }
   };
 
