@@ -212,8 +212,8 @@ export async function processReelInline(data: {
             const formatStr = platform === "instagram" ? "best" : "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best";
             const timeoutStr = platform === "instagram" ? 180000 : 120000;
             
-            // Stage 1: Download video
-            // Try better extraction args to bypass IP blocks (spoofing android/web clients)
+            // Stage 1: Download video using yt-dlp
+            const chromeUA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
             const ytArgs = platform === "youtube" ? '--extractor-args "youtube:player_client=android,web" --geo-bypass' : '--geo-bypass';
             
             // Check for cookies.txt in the project root to help bypass blocks
@@ -226,15 +226,23 @@ export async function processReelInline(data: {
                 }
             } catch {}
 
-            let dlCmd = `python3 -m yt_dlp "${finalUrl}" -f "${formatStr}" -o "${videoPath}" --max-filesize 50M --no-playlist --no-warnings ${ytArgs} ${cookieAuth} --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"`;
+            let dlCmd = `python3 -m yt_dlp "${finalUrl}" -f "${formatStr}" -o "${videoPath}" --max-filesize 50M --no-playlist --no-warnings ${ytArgs} ${cookieAuth} --user-agent "${chromeUA}" --add-header "Referer:https://www.${platform}.com/" --add-header "Origin:https://www.${platform}.com"`;
             
             console.log(`[Inline] Running download: ${dlCmd.replace(/--user-agent.*$/, '--user-agent "..."')}`);
             try {
                 const { stdout, stderr } = await execAsync(dlCmd, { timeout: timeoutStr });
                 if (stdout) console.log(`[Inline] Extraction stdout: ${stdout.slice(0, 200)}`);
-                if (stderr) console.log(`[Inline] Extraction stderr: ${stderr.slice(0, 200)}`);
+                if (stderr) {
+                    console.log(`[Inline] Extraction stderr: ${stderr.slice(0, 200)}`);
+                    if (stderr.includes("ERROR")) {
+                        await updateJobStatus(reelId, "DOWNLOADING", 15, stderr.split('\n').find(l => l.includes("ERROR"))?.slice(0, 255));
+                    }
+                }
             } catch (initialErr: any) {
                 console.warn(`[Inline] Extraction direct attempt failed:`, initialErr.stderr || initialErr.message);
+                const firstError = initialErr.stderr?.split('\n').find((l: string) => l.includes("ERROR")) || initialErr.message;
+                await updateJobStatus(reelId, "DOWNLOADING", 15, `yt-dlp error: ${firstError.slice(0, 255)}`);
+                
                 // Final attempt: Use browser cookies (requires Chrome/Edge installed on host)
                 try {
                     const cookieCmd = `${dlCmd} --cookies-from-browser chrome`;
@@ -393,11 +401,15 @@ export async function processReelInline(data: {
                     );
 
                     if (response.error) throw response.error;
-                    rawTranscript = response.result?.results?.channels[0]?.alternatives[0]?.transcript || "";
+                    const results = response.result?.results as any;
+                    rawTranscript = results?.channels[0]?.alternatives[0]?.transcript || "";
                     
                     if (rawTranscript) {
                         transcriptionMethod = "Deepgram AI";
-                        console.log(`[Inline] ✅ Transcribed via Deepgram`);
+                        console.log(`[Inline] ✅ Transcribed via Deepgram (${rawTranscript.length} chars)`);
+                    } else {
+                        console.warn(`[Inline] Deepgram returned empty transcript for reel ${reelId}`);
+                        await updateJobStatus(reelId, "TRANSCRIBING", 45, "Deepgram found no speech (Video may be music/silence only)");
                     }
                 }
             } catch (dgErr: any) {
