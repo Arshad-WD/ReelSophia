@@ -81,10 +81,12 @@ export function LoginForm() {
           client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
           callback: handleGoogleCallback,
           auto_select: false,
+          use_fedcm_for_prompt: true, // Opt-in to FedCM to stay modern
         });
         
-        // Render the standard Google button - this is much more reliable on mobile
+        // Clears any previous button rendering to prevent "removeChild" errors
         if (googleButtonRef.current) {
+          googleButtonRef.current.innerHTML = "";
           window.google.accounts.id.renderButton(googleButtonRef.current, {
             theme: "outline",
             size: "large",
@@ -96,6 +98,11 @@ export function LoginForm() {
         
         setScriptLoaded(true);
       }
+    };
+
+    return () => {
+      // Optional: Cleanup logic if script needs removal, 
+      // though usually GSI stays loaded once inserted
     };
   }, []);
 
