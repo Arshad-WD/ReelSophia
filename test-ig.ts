@@ -14,8 +14,9 @@ async function testInstagramExtraction(url: string) {
 
     try {
         console.log("\n--- Method 1: snapinsta ---");
-        const snapinsta = await import("snapinsta");
-        const igUrl = snapinsta.default ? await snapinsta.default(finalUrl) : await (snapinsta as any)(finalUrl);
+        // @ts-ignore
+        const snapinsta = require("snapinsta");
+        const igUrl = await (snapinsta.default || snapinsta)(finalUrl);
         
         if (igUrl && igUrl.length > 0 && igUrl[0].url) {
             console.log(`✅ Success! SnapInsta returned data.`);
@@ -29,8 +30,9 @@ async function testInstagramExtraction(url: string) {
 
     try {
         console.log("\n--- Method 2: instagram-url-direct ---");
-        const igDownloader = await import("instagram-url-direct");
-        const res = await igDownloader.default(finalUrl);
+        // @ts-ignore
+        const igDownloader = require("instagram-url-direct");
+        const res = await (igDownloader.default || igDownloader)(finalUrl);
         
         if (res && res.url_list && res.url_list.length > 0) {
             console.log(`✅ Success! instagram-url-direct returned data.`);

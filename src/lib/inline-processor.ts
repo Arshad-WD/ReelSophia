@@ -140,8 +140,9 @@ export async function processReelInline(data: {
             if (platform === "instagram") {
                 console.log(`[Inline] Trying robust Instagram downloader (SnapInsta)...`);
                 try {
-                    const snapinsta = await import("snapinsta");
-                    const igUrl = snapinsta.default ? await snapinsta.default(finalUrl) : await (snapinsta as any)(finalUrl);
+                    // @ts-ignore
+                    const snapinsta = require("snapinsta");
+                    const igUrl = await (snapinsta.default || snapinsta)(finalUrl);
                     
                     // The snapinsta package returns an array of media objects
                     if (igUrl && igUrl.length > 0 && igUrl[0].url) {
@@ -176,8 +177,9 @@ export async function processReelInline(data: {
                 if (!videoDownloaded) {
                     try {
                         console.log(`[Inline] Trying secondary IG proxy (instagram-url-direct)...`);
-                        const igDownloader = await import("instagram-url-direct");
-                        const res = await igDownloader.default(finalUrl);
+                        // @ts-ignore
+                        const igDownloader = require("instagram-url-direct");
+                        const res = await (igDownloader.default || igDownloader)(finalUrl);
                         
                         if (res && res.url_list && res.url_list.length > 0) {
                             const mediaUrl = res.url_list[0];
