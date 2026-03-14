@@ -242,15 +242,29 @@ export async function processReelInline(data: {
             const formatStr = platform === "instagram" ? "best" : "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best";
             const timeoutStr = platform === "instagram" ? 180000 : 120000;
             
-            let dlCmd = `python3 -m yt_dlp "${finalUrl}" -f "${formatStr}" -o "${videoPath}" --max-filesize 50M --no-playlist --no-warnings --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"`;
+            // Stage 1: Download video
+            // Try better extraction args to bypass IP blocks (spoofing android/web clients)
+            const ytArgs = platform === "youtube" ? '--extractor-args "youtube:player_client=android,web" --geo-bypass' : '--geo-bypass';
             
-            console.log(`[Inline] Running: ${dlCmd.replace(/--user-agent.*$/, '--user-agent "..."')}`); // Hide long UA in logs
+            // Check for cookies.txt in the project root to help bypass blocks
+            let cookieAuth = "";
+            try {
+                const cookiePath = path.join(process.cwd(), "cookies.txt");
+                if (fsSync.existsSync(cookiePath)) {
+                    cookieAuth = `--cookies "${cookiePath}"`;
+                    console.log(`[Inline] Using cookies.txt for authentication`);
+                }
+            } catch {}
+
+            let dlCmd = `python3 -m yt_dlp "${finalUrl}" -f "${formatStr}" -o "${videoPath}" --max-filesize 50M --no-playlist --no-warnings ${ytArgs} ${cookieAuth} --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"`;
+            
+            console.log(`[Inline] Running download: ${dlCmd.replace(/--user-agent.*$/, '--user-agent "..."')}`);
             try {
                 const { stdout, stderr } = await execAsync(dlCmd, { timeout: timeoutStr });
-                if (stdout) console.log(`[Inline] yt-dlp stdout: ${stdout.slice(0, 200)}`);
-                if (stderr) console.log(`[Inline] yt-dlp stderr: ${stderr.slice(0, 200)}`);
+                if (stdout) console.log(`[Inline] Extraction stdout: ${stdout.slice(0, 200)}`);
+                if (stderr) console.log(`[Inline] Extraction stderr: ${stderr.slice(0, 200)}`);
             } catch (initialErr: any) {
-                console.warn(`[Inline] yt-dlp direct attempt failed:`, initialErr.stderr || initialErr.message);
+                console.warn(`[Inline] Extraction direct attempt failed:`, initialErr.stderr || initialErr.message);
                 // Final attempt: Use browser cookies (requires Chrome/Edge installed on host)
                 try {
                     const cookieCmd = `${dlCmd} --cookies-from-browser chrome`;
