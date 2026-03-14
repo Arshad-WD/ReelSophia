@@ -125,4 +125,4 @@ async function shutdown(signal: string) {
 process.on("SIGINT", () => shutdown("SIGINT"));
 process.on("SIGTERM", () => shutdown("SIGTERM"));
 
-console.log("[Worker] 🎬 ReelSophia worker is ready and waiting for jobs...");
+console.log("[Worker] 🎬 ReelSophia worker is ready and waiting for jobs... (v4.0.0-ROBUST-READY)");

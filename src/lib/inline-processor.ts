@@ -68,6 +68,7 @@ export async function processReelInline(data: {
     aiSettings?: AISettings;
 }) {
     const { reelId, userId, sourceUrl, platform, aiSettings } = data;
+    console.log(`[Inline] 🏁 STARTING EXTRACTION V4 (Robust HTTP) for Reel: ${reelId}`);
     const openRouterKey = aiSettings?.keys?.openrouter;
     const tempDir = path.join(os.tmpdir(), "reelsophia", reelId);
 
@@ -100,10 +101,12 @@ export async function processReelInline(data: {
                 }
             }
 
-            // Attempt 2: yt-dlp (Fallback)
+            // Attempt 2: yt-dlp (Secondary Fallback)
             if (!metadata.title) {
-                const metaCmd = `python3 -m yt_dlp "${sourceUrl}" --print "%(title)s|||%(description)s|||%(uploader)s" --no-playlist --quiet --no-warnings`;
-                const { stdout, stderr } = await execAsync(metaCmd, { timeout: 30000 });
+                console.log(`[Inline] oEmbed empty, trying yt-dlp fallback...`);
+                // Using mobile spoofing for better survival
+                const metaCmd = `python3 -m yt_dlp "${sourceUrl}" --print "%(title)s|||%(description)s|||%(uploader)s" --no-playlist --quiet --no-warnings --extractor-args "youtube:player_client=android,web"`;
+                const { stdout } = await execAsync(metaCmd, { timeout: 30000 });
                 if (stdout) {
                     const parts = stdout.trim().split("|||");
                     if (parts.length >= 1) metadata.title = parts[0] || "";
@@ -114,7 +117,6 @@ export async function processReelInline(data: {
             }
         } catch (metaErr: any) {
             console.warn(`[Inline] Metadata Extraction failed:`, metaErr.message);
-            // Non-critical if we can still get the transcript later
         }
 
         // Stage 1: Download video using python -m yt_dlp (works even when yt-dlp isn't on PATH)
