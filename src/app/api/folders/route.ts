@@ -21,10 +21,10 @@ export async function GET() {
         });
 
         return NextResponse.json({ folders });
-    } catch (error) {
+    } catch (error: any) {
         console.error("GET /api/folders error:", error);
         return NextResponse.json(
-            { error: "Internal server error" },
+            { error: "Internal server error", details: error?.message || "Unknown error" },
             { status: 500 }
         );
     }
@@ -74,10 +74,10 @@ export async function POST(req: NextRequest) {
         });
 
         return NextResponse.json({ folder }, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
         console.error("POST /api/folders error:", error);
         return NextResponse.json(
-            { error: "Internal server error" },
+            { error: "Internal server error", details: error?.message || "Unknown error" },
             { status: 500 }
         );
     }

@@ -151,10 +151,10 @@ export async function POST(req: NextRequest) {
             { reel, message: "Processing started" },
             { status: 201 }
         );
-    } catch (error) {
+    } catch (error: any) {
         console.error("POST /api/reels error:", error);
         return NextResponse.json(
-            { error: "Internal server error" },
+            { error: "Internal server error", details: error?.message || "Unknown error" },
             { status: 500 }
         );
     }
@@ -200,10 +200,10 @@ export async function GET(req: NextRequest) {
         ]);
 
         return NextResponse.json({ reels, total, limit, offset });
-    } catch (error) {
+    } catch (error: any) {
         console.error("GET /api/reels error:", error);
         return NextResponse.json(
-            { error: "Internal server error" },
+            { error: "Internal server error", details: error?.message || "Unknown error" },
             { status: 500 }
         );
     }

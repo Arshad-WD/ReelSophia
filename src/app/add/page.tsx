@@ -72,7 +72,7 @@ export default function AddReelPage() {
 
           if (job.status === "COMPLETED") {
             toast.success("Insights ready!", { description: "Your reel has been fully processed." });
-            setTimeout(() => router.push(`/`), 1500);
+            setTimeout(() => router.push(`/note/${processing.reelId}`), 1500);
           } else if (job.status === "FAILED") {
             toast.error("Processing failed", { description: job.error });
           }
@@ -141,8 +141,7 @@ export default function AddReelPage() {
       toast.success("Reel captured!");
       setUrl("");
       
-      // Proactive redirect to home so they can see the optimistic card
-      setTimeout(() => router.push("/"), 800);
+      // Removed proactive redirect to home so user can see progress here
     } catch {
       toast.error("Connection error");
     } finally {
@@ -333,29 +332,13 @@ export default function AddReelPage() {
 
       {/* Processing State */}
       {processing && (
-        <section className="mt-8 relative z-10 animate-in slide-in-from-bottom-4 duration-500">
-          <div className="signature-card p-8 border-primary/30 relative overflow-hidden">
-             {/* Background glow for processing state */}
-             <div className="absolute inset-0 bg-primary/5 animate-pulse-glow" />
-             
-             <div className="relative z-10">
-               <div className="flex items-center justify-center gap-3 mb-8">
-                 <div className="relative flex h-3 w-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
-                 </div>
-                 <h3 className="text-sm text-primary font-semibold uppercase tracking-widest">Processing Intelligence</h3>
-               </div>
-               <div className="bg-background/50 rounded-2xl p-6 border border-white/[0.05]">
-                 <ProcessingStatus
-                   status={processing.status}
-                   progress={processing.progress}
-                   error={processing.error}
-                   className="w-full"
-                 />
-               </div>
-             </div>
-          </div>
+        <section className="mt-12 relative z-10 animate-in slide-in-from-bottom-4 duration-1000">
+          <ProcessingStatus
+            status={processing.status}
+            progress={processing.progress}
+            error={processing.error}
+            className="w-full"
+          />
         </section>
       )}
     </div>

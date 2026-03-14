@@ -156,8 +156,8 @@ export async function processReelInline(data: {
                         if (mediaUrl) {
                             console.log(`[Inline] Got download URL from proxy API: ${mediaUrl.substring(0, 50)}...`);
                             
-                            // Download the file stream
-                            const dlRes = await fetch(mediaUrl);
+                            // Download the file stream with a timeout
+                            const dlRes = await fetch(mediaUrl, { signal: AbortSignal.timeout(60000) });
                             if (dlRes.ok && dlRes.body) {
                                 const fileStream = fsSync.createWriteStream(videoPath);
                                 const readable = require('stream').Readable.fromWeb(dlRes.body as any);
@@ -178,6 +178,8 @@ export async function processReelInline(data: {
                         }
                     } else {
                          console.warn(`[Inline] Proxy API returned status: ${apiRes.status}`);
+                         const errText = await apiRes.text().catch(() => "N/A");
+                         console.warn(`[Inline] Proxy API Error Body:`, errText.slice(0, 200));
                     }
                 } catch (apiErr) {
                     console.warn(`[Inline] Proxy API attempt failed:`, apiErr);
@@ -500,7 +502,8 @@ Core pipeline is active, successfully reached Stage 5 but found no content to an
         });
 
         if (!currentReel?.folderId) {
-            await updateJobStatus(reelId, "CATEGORIZING", 95);
+            // Use SUMMARIZING as the status to avoid missing enum errors if prisma generate was blocked
+            await updateJobStatus(reelId, "SUMMARIZING", 95);
             console.log(`[Inline] Auto-categorizing reel ${reelId}...`);
             try {
                 const category = await suggestCategory(cleaned, knowledge.title, apiKey);

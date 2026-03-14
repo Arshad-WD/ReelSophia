@@ -1,9 +1,7 @@
 import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { db as prisma } from "@/lib/db";
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "sophia_secret_default_key");
 const COOKIE_NAME = "sophia_session";
 
