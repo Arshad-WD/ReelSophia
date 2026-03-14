@@ -67,38 +67,43 @@ export function LoginForm() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
+    // Check if script is already present
+    if (document.querySelector('script[src="https://accounts.google.com/gsi/client"]')) {
+      if (window.google) {
+        initializeGoogle();
+      }
+      return;
+    }
+
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
     script.async = true;
     script.defer = true;
     document.head.appendChild(script);
 
-    script.onload = () => {
-      if (window.google) {
-        window.google.accounts.id.initialize({
-          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-          callback: handleGoogleCallback,
-          auto_select: false,
-          use_fedcm_for_prompt: true, // Opt-in to FedCM to stay modern
+    function initializeGoogle() {
+      window.google.accounts.id.initialize({
+        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+        callback: handleGoogleCallback,
+        auto_select: false,
+        use_fedcm_for_prompt: true,
+      });
+      
+      if (googleButtonRef.current) {
+        googleButtonRef.current.innerHTML = "";
+        window.google.accounts.id.renderButton(googleButtonRef.current, {
+          theme: "outline",
+          size: "large",
+          width: googleButtonRef.current.offsetWidth || 300,
+          text: "continue_with",
+          shape: "pill",
         });
-        
-        // Clears any previous button rendering to prevent "removeChild" errors
-        if (googleButtonRef.current) {
-          googleButtonRef.current.innerHTML = "";
-          window.google.accounts.id.renderButton(googleButtonRef.current, {
-            theme: "outline",
-            size: "large",
-            width: googleButtonRef.current.offsetWidth,
-            text: "continue_with",
-            shape: "pill",
-          });
-        }
-        
-        setScriptLoaded(true);
       }
-    };
+      setScriptLoaded(true);
+    }
+
+    script.onload = initializeGoogle;
 
     return () => {
       // Optional: Cleanup logic if script needs removal, 
