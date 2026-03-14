@@ -159,12 +159,13 @@ export function LoginForm() {
         </div>
       </div>
 
-      <div 
-        ref={googleButtonRef} 
-        className="w-full flex justify-center min-h-[50px]"
-      >
+      <div className="relative w-full flex justify-center min-h-[50px]">
+        <div 
+          ref={googleButtonRef} 
+          className="w-full flex justify-center"
+        />
         {!scriptLoaded && (
-          <div className="w-full bg-white/[0.05] animate-pulse h-[50px] rounded-2xl flex items-center justify-center">
+          <div className="absolute inset-0 w-full bg-white/[0.05] animate-pulse h-[50px] rounded-2xl flex items-center justify-center pointer-events-none">
             <span className="text-[10px] text-white/20 uppercase tracking-widest font-bold">Initializing Auth Protocol...</span>
           </div>
         )}

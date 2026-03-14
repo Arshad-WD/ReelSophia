@@ -4,9 +4,9 @@ import { AppLayout } from "@/components/app-layout";
 import { UIProvider } from "@/lib/ui-context";
 import "./globals.css";
 
-const outfit = Outfit({ subsets: ["latin"], variable: "--font-sans" });
-const dmSerif = DM_Serif_Display({ weight: "400", subsets: ["latin"], variable: "--font-heading" });
-const jetBrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
+const outfit = Outfit({ subsets: ["latin"], variable: "--font-sans", display: 'swap' });
+const dmSerif = DM_Serif_Display({ weight: "400", subsets: ["latin"], variable: "--font-heading", display: 'swap' });
+const jetBrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: 'swap' });
 
 export const metadata: Metadata = {
   title: "ReelSophia — Knowledge from Reels",
