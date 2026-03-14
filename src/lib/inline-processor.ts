@@ -83,9 +83,12 @@ export async function processReelInline(data: {
         let metadata = { title: "", description: "", uploader: "" };
         try {
             console.log(`[Inline] Extracting metadata for: ${sourceUrl}`);
-            // USE A SIMPLER FORMAT TO AVOID WINDOWS SHELL QUOTING ISSUES
-            const metaCmd = `python -m yt_dlp "${sourceUrl}" --print "%(title)s|||%(description)s|||%(uploader)s" --no-playlist --quiet --no-warnings`;
-            const { stdout } = await execAsync(metaCmd, { timeout: 30000 });
+            // USE python3 and capture stderr for better debugging on Linux/Render
+            const metaCmd = `python3 -m yt_dlp "${sourceUrl}" --print "%(title)s|||%(description)s|||%(uploader)s" --no-playlist --quiet --no-warnings`;
+            const { stdout, stderr } = await execAsync(metaCmd, { timeout: 30000 });
+            
+            if (stderr) console.warn(`[Inline] Metadata Extraction stderr:`, stderr);
+            
             if (stdout) {
                 const parts = stdout.trim().split("|||");
                 if (parts.length >= 1) metadata.title = parts[0] || "";
@@ -94,8 +97,13 @@ export async function processReelInline(data: {
                 
                 console.log(`[Inline] Metadata extracted: ${metadata.title}`);
             }
-        } catch (metaErr) {
-            console.warn(`[Inline] Metadata extraction failed:`, metaErr);
+        } catch (metaErr: any) {
+            console.warn(`[Inline] Metadata extraction failed:`, metaErr.stderr || metaErr.message);
+            // Save the error to the job so the user can see it in logs
+            await db.processingJob.update({
+                where: { reelId },
+                data: { error: `Metadata stage failed: ${metaErr.message.slice(0, 200)}` }
+            });
         }
 
         // Stage 1: Download video using python -m yt_dlp (works even when yt-dlp isn't on PATH)
@@ -223,14 +231,15 @@ export async function processReelInline(data: {
             const formatStr = platform === "instagram" ? "best" : "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best";
             const timeoutStr = platform === "instagram" ? 180000 : 120000;
             
-            let dlCmd = `python -m yt_dlp "${finalUrl}" -f "${formatStr}" -o "${videoPath}" --max-filesize 50M --no-playlist --no-warnings --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"`;
+            let dlCmd = `python3 -m yt_dlp "${finalUrl}" -f "${formatStr}" -o "${videoPath}" --max-filesize 50M --no-playlist --no-warnings --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"`;
             
             console.log(`[Inline] Running: ${dlCmd.replace(/--user-agent.*$/, '--user-agent "..."')}`); // Hide long UA in logs
             try {
                 const { stdout, stderr } = await execAsync(dlCmd, { timeout: timeoutStr });
                 if (stdout) console.log(`[Inline] yt-dlp stdout: ${stdout.slice(0, 200)}`);
-            } catch (initialErr) {
-                console.warn(`[Inline] yt-dlp direct attempt failed. Trying with browser cookies...`);
+                if (stderr) console.log(`[Inline] yt-dlp stderr: ${stderr.slice(0, 200)}`);
+            } catch (initialErr: any) {
+                console.warn(`[Inline] yt-dlp direct attempt failed:`, initialErr.stderr || initialErr.message);
                 // Final attempt: Use browser cookies (requires Chrome/Edge installed on host)
                 try {
                     const cookieCmd = `${dlCmd} --cookies-from-browser chrome`;
