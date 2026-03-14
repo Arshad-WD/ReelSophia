@@ -136,16 +136,36 @@ export async function POST(req: NextRequest) {
             },
         });
 
-        // Fire-and-forget: process the reel inline (no queue needed)
-        processReelInline({
+        // Dispatch processing: use BullMQ queue in production (for Render worker),
+        // fall back to inline processing in development
+        const jobData = {
             reelId: reel.id,
             userId,
             sourceUrl: url,
             platform: validation.platform!,
             aiSettings: userDb.aiSettings as any,
-        }).catch((err) => {
-            console.error(`[API] Background processing error for ${reel.id}:`, err);
-        });
+        };
+
+        if (process.env.NODE_ENV === "production") {
+            // Enqueue to BullMQ → picked up by Render worker
+            try {
+                const { addReelJob } = await import("@/lib/queue");
+                await addReelJob(jobData);
+                console.log(`[API] Job enqueued for ${reel.id}`);
+            } catch (queueErr) {
+                console.error(`[API] Queue enqueue failed, falling back to inline:`, queueErr);
+                // Fallback: try inline if queue fails
+                processReelInline(jobData).catch((err) => {
+                    console.error(`[API] Background processing error for ${reel.id}:`, err);
+                });
+            }
+        } else {
+            // Development: process inline (fire-and-forget)
+            processReelInline(jobData).catch((err) => {
+                console.error(`[API] Background processing error for ${reel.id}:`, err);
+            });
+        }
+
 
         return NextResponse.json(
             { reel, message: "Processing started" },

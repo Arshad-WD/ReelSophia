@@ -1,0 +1,27 @@
+# Render Blueprint — ReelSophia Worker
+# Deploy this as a Background Worker on Render.
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  - type: worker
+    name: reelsophia-worker
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: |
+      npm install &&
+      npx prisma generate &&
+      apt-get update && apt-get install -y python3 python3-pip ffmpeg &&
+      pip3 install yt-dlp
+    startCommand: npx tsx worker/index.ts
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: DEEPGRAM_API_KEY
+        sync: false
+      - key: NODE_ENV
+        value: production
