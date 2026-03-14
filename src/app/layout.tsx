@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Outfit, DM_Serif_Display, JetBrains_Mono } from "next/font/google";
 import { AppLayout } from "@/components/app-layout";
+import { UIProvider } from "@/lib/ui-context";
 import "./globals.css";
 
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-sans" });
@@ -35,9 +36,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body className={`${outfit.variable} ${dmSerif.variable} ${jetBrainsMono.variable} font-sans antialiased text-foreground bg-background overflow-x-hidden`} suppressHydrationWarning>
-        <AppLayout>
-          {children}
-        </AppLayout>
+        <UIProvider>
+          <AppLayout>
+            {children}
+          </AppLayout>
+        </UIProvider>
       </body>
     </html>
   );

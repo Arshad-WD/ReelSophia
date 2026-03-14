@@ -241,3 +241,55 @@ Respond with valid JSON only:
         return { name: "General", icon: "📁" };
     }
 }
+/**
+ * Fallback extraction for when transcription fails but video metadata is available.
+ */
+export async function extractKnowledgeFromMetadata(
+    metadata: { title: string; description: string; uploader: string },
+    customApiKey?: string
+): Promise<StructuredKnowledge> {
+    const systemPrompt = `You are a knowledge extraction assistant. You only have the video title and description, not the full transcript. 
+Extract as much structured knowledge as possible based ON THE METADATA PROVIDED.
+If the description is generic, do your best to infer the main idea.
+
+Respond with valid JSON only:
+{
+  "title": "the video title or a refined version",
+  "mainIdea": "one sentence describing the core concept based on metadata",
+  "keyPoints": ["best guess at key insight 1"],
+  "actionableTips": ["general advice related to the topic"],
+  "toolsConcepts": ["tools or concepts mentioned in title/desc"],
+  "shortExplanation": "2-3 sentence explanation based on what is known",
+  "tags": ["tag1", "tag2"]
+}
+
+Guidelines:
+- Acknowledge that this is an AI-generated summary from metadata.
+- Be honest about the depth of information available.`;
+
+    const userMessage = `Title: ${metadata.title}\nDescription: ${metadata.description}\nUploader: ${metadata.uploader}`;
+
+    const result = await callOpenRouter(
+        [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userMessage },
+        ],
+        800,
+        customApiKey
+    );
+
+    try {
+        const parsed = JSON.parse(result);
+        return {
+            title: parsed.title || metadata.title || "Untitled Note",
+            mainIdea: parsed.mainIdea || "",
+            keyPoints: parsed.keyPoints || [],
+            actionableTips: parsed.actionableTips || [],
+            toolsConcepts: parsed.toolsConcepts || [],
+            shortExplanation: parsed.shortExplanation || "",
+            tags: parsed.tags || [],
+        };
+    } catch {
+        throw new Error("Failed to parse AI response from metadata");
+    }
+}

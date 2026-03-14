@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { sign } from "jsonwebtoken";
+import { SignJWT } from "jose";
 import { cookies } from "next/headers";
 
 const JWT_SECRET = process.env.JWT_SECRET || "sophia_secret_default_key";
@@ -35,16 +35,17 @@ export async function POST(req: NextRequest) {
           email,
           name: name || email.split("@")[0],
           imageUrl: picture,
+          passwordHash: "",
         },
       });
     }
 
     // Create session
-    const token = sign(
-      { id: user.id, email: user.email, name: user.name },
-      JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+    const token = await new SignJWT({ id: user.id, email: user.email, name: user.name })
+      .setProtectedHeader({ alg: "HS256" })
+      .setIssuedAt()
+      .setExpirationTime("7d")
+      .sign(new TextEncoder().encode(JWT_SECRET));
 
     const cookieStore = await cookies();
     cookieStore.set(COOKIE_NAME, token, {

@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
+import { useUI } from "@/lib/ui-context";
 import { ProcessingStatus } from "@/components/processing-status";
 import { toast } from "sonner";
 import {
@@ -18,6 +20,8 @@ interface Folder {
 
 export default function AddReelPage() {
   const router = useRouter();
+  const { user } = useAuth();
+  const { addOptimisticReel, updateOptimisticReel, removeOptimisticReel } = useUI();
   const [url, setUrl] = useState("");
   const [folderId, setFolderId] = useState<string | null>(null);
   const [folders, setFolders] = useState<Folder[]>([]);
@@ -38,25 +42,39 @@ export default function AddReelPage() {
   }, []);
 
   useEffect(() => {
-    if (!processing || processing.status === "COMPLETED" || processing.status === "FAILED") return;
+    if (!processing || processing.status === "COMPLETED" || processing.status === "FAILED") {
+      if (processing?.status === "COMPLETED" || processing?.status === "FAILED") {
+        // Wait a bit before removing to allow home page to fetch real data
+        setTimeout(() => removeOptimisticReel(processing.reelId), 3000);
+      }
+      return;
+    }
 
     const interval = setInterval(async () => {
       try {
         const res = await fetch(`/api/jobs/${processing.reelId}`);
         if (res.ok) {
           const data = await res.json();
+          const job = data.job;
+          
           setProcessing({
             reelId: processing.reelId,
-            status: data.job.status,
-            progress: data.job.progress,
-            error: data.job.error,
+            status: job.status,
+            progress: job.progress,
+            error: job.error,
           });
 
-          if (data.job.status === "COMPLETED") {
+          // Sync with global optimistic state
+          updateOptimisticReel(processing.reelId, {
+            status: job.status as "PENDING" | "DOWNLOADING" | "EXTRACTING" | "TRANSCRIBING" | "CLEANING" | "SUMMARIZING" | "COMPLETED" | "FAILED",
+            progress: job.progress
+          });
+
+          if (job.status === "COMPLETED") {
             toast.success("Insights ready!", { description: "Your reel has been fully processed." });
-            setTimeout(() => router.push(`/note/${processing.reelId}`), 1500);
-          } else if (data.job.status === "FAILED") {
-            toast.error("Processing failed", { description: data.job.error });
+            setTimeout(() => router.push(`/`), 1500);
+          } else if (job.status === "FAILED") {
+            toast.error("Processing failed", { description: job.error });
           }
         }
       } catch {
@@ -65,11 +83,17 @@ export default function AddReelPage() {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [processing, router]);
+  }, [processing, router, updateOptimisticReel, removeOptimisticReel]);
 
   const handleSubmit = async () => {
     if (!url.trim()) {
       toast.error("Please enter a reel URL");
+      return;
+    }
+
+    const platform = detectPlatform(url.trim());
+    if (!platform) {
+      toast.error("Unsupported platform URL");
       return;
     }
 
@@ -89,6 +113,18 @@ export default function AddReelPage() {
         return;
       }
 
+      const tempId = data.reel.id;
+
+      // Add to optimistic state immediately
+      addOptimisticReel({
+        id: tempId,
+        url: url.trim(),
+        platform: platform,
+        status: "PENDING",
+        progress: 0,
+        createdAt: new Date().toISOString()
+      });
+
       if (data.duplicate) {
         toast.info("Already processed", { description: "Redirecting to your existing notes." });
         router.push(`/note/${data.reel.id}`);
@@ -96,7 +132,7 @@ export default function AddReelPage() {
       }
 
       setProcessing({
-        reelId: data.reel.id,
+        reelId: tempId,
         status: "PENDING",
         progress: 0,
         error: null,
@@ -104,6 +140,9 @@ export default function AddReelPage() {
 
       toast.success("Reel captured!");
       setUrl("");
+      
+      // Proactive redirect to home so they can see the optimistic card
+      setTimeout(() => router.push("/"), 800);
     } catch {
       toast.error("Connection error");
     } finally {

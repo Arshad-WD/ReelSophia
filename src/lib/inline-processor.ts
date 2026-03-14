@@ -19,7 +19,13 @@ import {
     chunkTranscript,
     getTranscriptStats,
 } from "@/lib/transcript-cleaner";
-import { summarizeChunk, extractStructuredKnowledge, extractKnowledgeSinglePass, suggestCategory } from "@/lib/openrouter";
+import {
+    summarizeChunk,
+    extractStructuredKnowledge,
+    extractKnowledgeSinglePass,
+    suggestCategory,
+    extractKnowledgeFromMetadata,
+} from "@/lib/openrouter";
 import type { ChunkSummary, AISettings } from "@/types";
 
 const execAsync = promisify(exec);
@@ -70,6 +76,27 @@ export async function processReelInline(data: {
 
         const videoPath = path.join(tempDir, "video.mp4");
         const audioPath = path.join(tempDir, "audio.wav");
+        const metadataPath = path.join(tempDir, "metadata.json");
+
+        // Stage 0: Extract Metadata (Fast & Reliable)
+        await updateJobStatus(reelId, "DOWNLOADING", 5);
+        let metadata = { title: "", description: "", uploader: "" };
+        try {
+            console.log(`[Inline] Extracting metadata for: ${sourceUrl}`);
+            // USE A SIMPLER FORMAT TO AVOID WINDOWS SHELL QUOTING ISSUES
+            const metaCmd = `python -m yt_dlp "${sourceUrl}" --print "%(title)s|||%(description)s|||%(uploader)s" --no-playlist --quiet --no-warnings`;
+            const { stdout } = await execAsync(metaCmd, { timeout: 30000 });
+            if (stdout) {
+                const parts = stdout.trim().split("|||");
+                if (parts.length >= 1) metadata.title = parts[0] || "";
+                if (parts.length >= 2) metadata.description = parts[1] || "";
+                if (parts.length >= 3) metadata.uploader = parts[2] || "";
+                
+                console.log(`[Inline] Metadata extracted: ${metadata.title}`);
+            }
+        } catch (metaErr) {
+            console.warn(`[Inline] Metadata extraction failed:`, metaErr);
+        }
 
         // Stage 1: Download video using python -m yt_dlp (works even when yt-dlp isn't on PATH)
         await updateJobStatus(reelId, "DOWNLOADING", 10);
@@ -360,25 +387,10 @@ export async function processReelInline(data: {
             }
         }
 
-        // Fallback: If still no transcript, generate a DETAILED error instead of just a generic placeholder
+        // Fallback: If still no transcript
         if (!rawTranscript) {
-            const videoExists = await fs.access(videoPath).then(() => true).catch(() => false);
-            const downloadStatus = videoDownloaded ? (videoExists ? "✅ Downloaded" : "⚠️ Downloaded but file missing") : "❌ Download Failed (yt-dlp)";
-            const extractStatus = audioExtracted ? "✅ Extracted" : "❌ Extract Failed (ffmpeg)";
-            const dgStatus = deepgramKey ? "❌ Deepgram Error" : "⚠️ Key Missing";
-            
-            rawTranscript = `[Processing Failure Report]
-- Video: ${downloadStatus} (Path: ${videoPath})
-- Audio: ${extractStatus}
-- Transcription: ${dgStatus}
-
-This reel could not be processed fully. 
-1. The video file was ${videoExists ? "found" : "NOT found"} on disk at Stage 3.
-2. Instagram reels often require cookies for yt-dlp to work.
-3. If Audio extraction failed, it might be due to a codec issue or path issue on Windows.
-4. Try a YouTube Short to verify the core pipeline is working.`;
-            
-            console.error(`[Inline] ❌ Transcription failed for ${reelId}. Returning failure report.`);
+            rawTranscript = ""; // Clear to signify failure
+            console.error(`[Inline] ❌ Transcription failed for ${reelId}. Will attempt metadata fallback if possible.`);
         }
 
         // Stage 4: Clean transcript
@@ -431,19 +443,48 @@ This reel could not be processed fully.
         const chunks = chunkTranscript(cleaned, MAX_CHUNK_WORDS);
         let knowledge;
 
-        if (chunks.length <= 1) {
-            console.log(`[Inline] Single-pass extraction for reel ${reelId}`);
-            knowledge = await extractKnowledgeSinglePass(cleaned, apiKey);
-        } else {
-            console.log(`[Inline] Chunk-based extraction: ${chunks.length} chunks`);
-            const chunkSummaries: ChunkSummary[] = [];
-            for (let i = 0; i < chunks.length; i++) {
-                const summary = await summarizeChunk(chunks[i], i, chunks.length, apiKey);
-                chunkSummaries.push(summary);
-                const chunkProgress = 70 + Math.round((i / chunks.length) * 20);
-                await updateJobStatus(reelId, "SUMMARIZING", chunkProgress);
+        try {
+            if (rawTranscript && rawTranscript.length > 50) {
+                if (chunks.length <= 1) {
+                    console.log(`[Inline] Single-pass extraction for reel ${reelId}`);
+                    knowledge = await extractKnowledgeSinglePass(cleaned, apiKey);
+                } else {
+                    console.log(`[Inline] Chunk-based extraction: ${chunks.length} chunks`);
+                    const chunkSummaries: ChunkSummary[] = [];
+                    for (let i = 0; i < chunks.length; i++) {
+                        const summary = await summarizeChunk(chunks[i], i, chunks.length, apiKey);
+                        chunkSummaries.push(summary);
+                        const chunkProgress = 70 + Math.round((i / chunks.length) * 20);
+                        await updateJobStatus(reelId, "SUMMARIZING", chunkProgress);
+                    }
+                    knowledge = await extractStructuredKnowledge(chunkSummaries, cleaned, apiKey);
+                }
+            } else if (metadata.title) {
+                // FALLBACK: Use metadata if transcription failed
+                console.log(`[Inline] Using metadata fallback for reel ${reelId}`);
+                knowledge = await extractKnowledgeFromMetadata(metadata, apiKey);
+                
+                // Add a note that this was a fallback
+                knowledge.shortExplanation = `[Transcript unavailable] ${knowledge.shortExplanation}`;
+                
+                // Set a meaningful error for the job so user knows why it's different
+                await db.processingJob.update({
+                    where: { reelId },
+                    data: { error: "Audio transcription failed. Generated insights from video metadata instead." }
+                });
+            } else {
+                const errorContext = `[Extraction Failed] Both audio transcription and metadata extraction failed for this ${platform} reel. 
+Possible reasons:
+1. Instagram anti-scraping (often requires logged-in cookies for yt-dlp).
+2. Video is private or unavailable.
+3. Network timeout during download.
+
+Core pipeline is active, successfully reached Stage 5 but found no content to analyze.`;
+                throw new Error(errorContext);
             }
-            knowledge = await extractStructuredKnowledge(chunkSummaries, cleaned, apiKey);
+        } catch (aiErr: any) {
+            console.error(`[Inline] AI Stage failed:`, aiErr.message);
+            throw aiErr;
         }
 
         // Stage 6: Auto-Categorization (if no folder assigned)

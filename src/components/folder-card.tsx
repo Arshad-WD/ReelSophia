@@ -151,29 +151,28 @@ export function StoryFolder({ id, name, icon, className }: Omit<FolderCardProps,
   return (
     <Link 
       href={`/library/${id}`} 
-      className={cn("flex flex-col items-center gap-3 shrink-0 group", className)}
+      className={cn("flex flex-col items-center gap-4 shrink-0 group px-2", className)}
     >
       <div className="relative">
         {/* Instagram-style Gradient Ring */}
-        <div className="absolute -inset-1.5 rounded-full bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] opacity-20 group-hover:opacity-100 blur-[2px] group-hover:blur-[4px] transition-all duration-700 animate-breath-glow" />
+        <div className="absolute -inset-1.5 rounded-full ig-gradient opacity-30 group-hover:opacity-100 blur-[1px] group-hover:blur-[8px] transition-all duration-700 animate-breath-glow" />
         
         {/* Inner Content Surface */}
-        <div className="relative w-20 h-20 rounded-full bg-background border-[3px] border-background flex items-center justify-center text-3xl overflow-hidden shadow-2xl transition-transform duration-700 group-hover:scale-105 active:scale-95">
-          {/* Subtle noise and gloss */}
-          <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
-          <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+        <div className="relative w-24 h-24 rounded-full bg-background border-[3px] border-background flex items-center justify-center text-4xl overflow-hidden shadow-2xl transition-all duration-500 group-hover:scale-105 active:scale-95">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
           
-          <span className="relative z-10 group-hover:scale-110 transition-transform duration-700 drop-shadow-sm">
+          <span className="relative z-10 group-hover:scale-110 transition-transform duration-500 drop-shadow-2xl">
             {icon || "📁"}
           </span>
         </div>
       </div>
       
       <div className="flex flex-col items-center">
-        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40 group-hover:text-primary transition-colors duration-500 truncate max-w-[80px]">
+        <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/10 group-hover:text-primary transition-all duration-700 truncate max-w-[100px] text-center">
           {name}
         </span>
-        <div className="w-1 h-1 rounded-full bg-primary/0 group-hover:bg-primary/60 transition-all duration-700 mt-1" />
+        <div className="w-1 h-1 rounded-full bg-white/0 group-hover:bg-primary group-hover:w-4 transition-all duration-1000 mt-2 shadow-[0_0_8px_var(--color-primary)]" />
       </div>
     </Link>
   );

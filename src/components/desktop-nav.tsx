@@ -30,23 +30,23 @@ export function DesktopNav() {
     >
       {/* ── Vertical Command Strip ── */}
       <div className={cn(
-        "relative flex flex-col items-center py-8 bg-background/20 backdrop-blur-[100px] border border-white/5 rounded-[2.5rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.8)] pointer-events-auto transition-all duration-700",
+        "relative flex flex-col items-center py-8 bg-white/[0.01] backdrop-blur-xl border border-white/[0.05] rounded-[2.5rem] shadow-2xl pointer-events-auto transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
         isExpanded ? "w-full px-6 items-start" : "w-16 px-0 items-center",
-        "before:absolute before:inset-x-0 before:top-0 before:h-20 before:bg-primary/10 before:blur-3xl before:rounded-full before:-z-10"
+        "before:absolute before:inset-x-0 before:top-0 before:h-24 before:bg-primary/5 before:blur-3xl before:rounded-full before:-z-10"
       )}>
         
         {/* Brand Core */}
         <div className={cn(
-          "mb-12 flex items-center transition-all duration-700",
+          "mb-12 flex items-center transition-all duration-300",
           isExpanded ? "gap-4" : "gap-0"
         )}>
-           <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center shadow-[0_0_30px_rgba(245,158,11,0.3)] shrink-0">
-             <Hexagon className="w-6 h-6 text-background animate-pulse" />
+           <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-lg shrink-0 group-hover:bg-primary transition-colors">
+             <Hexagon className="w-5 h-5 text-black" />
            </div>
            {isExpanded && (
-             <div className="flex flex-col animate-in fade-in slide-in-from-left-4 duration-500">
-               <span className="text-sm font-heading font-bold tracking-tighter">SOPHIA OS</span>
-               <span className="text-[7px] font-bold tracking-[0.4em] uppercase text-primary">v2.4 Adaptive</span>
+             <div className="flex flex-col animate-in fade-in slide-in-from-left-4 duration-300">
+               <span className="text-sm font-heading font-bold tracking-tight text-white">SOPHIA OS</span>
+               <span className="text-[7px] font-bold tracking-[0.4em] uppercase text-primary/60">INTELLIGENCE</span>
              </div>
            )}
         </div>
@@ -62,26 +62,26 @@ export function DesktopNav() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "relative flex items-center h-12 rounded-2xl transition-all duration-500 group/item overflow-hidden",
+                  "relative flex items-center h-12 rounded-xl transition-all duration-300 group/item overflow-hidden",
                   isExpanded ? "w-full px-4 gap-4" : "w-12 px-0 justify-center",
                   isActive 
-                    ? "bg-primary/10 text-primary shadow-[inset_0_0_20px_rgba(245,158,11,0.05)]" 
-                    : "text-muted-foreground/30 hover:text-white hover:bg-white/5"
+                    ? "bg-white/[0.08] text-primary border border-white/[0.05]" 
+                    : "text-white/20 hover:text-white hover:bg-white/[0.04]"
                 )}
               >
                 <Icon className={cn(
-                  "shrink-0 transition-transform duration-500",
+                  "shrink-0 transition-all duration-300 w-5 h-5",
                   isActive ? "scale-110" : "group-hover/item:scale-110"
                 )} />
                 
                 {isExpanded && (
-                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] whitespace-nowrap animate-in fade-in slide-in-from-left-4 duration-500">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] whitespace-nowrap animate-in fade-in slide-in-from-left-4 duration-300">
                     {item.label}
                   </span>
                 )}
 
                 {isActive && (
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-l-full blur-[1px]" />
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[2px] h-6 ig-gradient rounded-l-full shadow-[0_0_8px_rgba(225,48,108,0.4)]" />
                 )}
               </Link>
             );
@@ -95,27 +95,27 @@ export function DesktopNav() {
         )}>
           {/* Status Glow */}
           <div className={cn(
-            "flex items-center bg-white/[0.03] border border-white/5 transition-all duration-500",
+            "flex items-center bg-white/[0.02] border border-white/[0.05] transition-all duration-300",
             isExpanded ? "rounded-xl px-4 py-2 gap-3" : "rounded-full w-8 h-8 justify-center"
           )}>
-            <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse shadow-[0_0_10px_rgba(245,158,11,0.8)]" />
+            <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse shadow-[0_0_8px_var(--color-accent)]" />
             {isExpanded && (
-              <span className="text-[7px] font-bold uppercase tracking-widest text-muted-foreground/40">Syncing Knowledge...</span>
+              <span className="text-[7px] font-bold uppercase tracking-[0.3em] text-white/20">Syncing...</span>
             )}
           </div>
 
           <div className={cn(
-            "flex items-center transition-all duration-500",
+            "flex items-center transition-all duration-300",
             isExpanded ? "gap-4" : "flex-col gap-4"
           )}>
             <Link 
               href="/settings"
-              className="w-10 h-10 rounded-full border border-white/10 p-[1px] hover:border-primary/40 hover:scale-110 transition-all duration-500 overflow-hidden"
+              className="w-10 h-10 rounded-full border border-white/[0.08] p-[1px] hover:border-primary/60 hover:scale-110 transition-all duration-300 overflow-hidden relative"
             >
               {user?.imageUrl ? (
                 <img src={user.imageUrl} alt="Profile" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-primary bg-card/60">
+                <div className="w-full h-full flex items-center justify-center text-[9px] font-bold text-primary bg-white/[0.01]">
                   {user?.name?.[0] || "?"}
                 </div>
               )}
@@ -124,7 +124,7 @@ export function DesktopNav() {
             <button 
               onClick={() => logout()}
               className={cn(
-                "text-muted-foreground/20 hover:text-destructive transition-colors p-2",
+                "text-white/10 hover:text-destructive transition-all duration-300 p-2 hover:bg-destructive/10 rounded-full",
                 isExpanded ? "rotate-0" : "rotate-90"
               )}
             >
