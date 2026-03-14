@@ -136,8 +136,8 @@ export async function POST(req: NextRequest) {
             },
         });
 
-        // Dispatch processing: use BullMQ queue in production (for Render worker),
-        // fall back to inline processing in development
+        // Dispatch processing: ALWAYS use BullMQ queue in production (for Render worker),
+        // NEVER fall back to inline processing in production as Vercel lacks ffmpeg/yt-dlp.
         const jobData = {
             reelId: reel.id,
             userId,
@@ -146,21 +146,28 @@ export async function POST(req: NextRequest) {
             aiSettings: userDb.aiSettings as any,
         };
 
-        if (process.env.NODE_ENV === "production") {
+        const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "production";
+        console.log(`[API] Deployment Environment: NODE_ENV=${process.env.NODE_ENV}, VERCEL_ENV=${process.env.VERCEL_ENV}. IsProd: ${isProduction} (Deploy v4.1 - NO CACHE)`);
+
+        if (isProduction || process.env.REDIS_URL) {
             // Enqueue to BullMQ → picked up by Render worker
             try {
                 const { addReelJob } = await import("@/lib/queue");
                 await addReelJob(jobData);
-                console.log(`[API] Job enqueued for ${reel.id}`);
-            } catch (queueErr) {
-                console.error(`[API] Queue enqueue failed, falling back to inline:`, queueErr);
-                // Fallback: try inline if queue fails
-                processReelInline(jobData).catch((err) => {
-                    console.error(`[API] Background processing error for ${reel.id}:`, err);
-                });
+                console.log(`[API] ✅ Job enqueued to BullMQ for ${reel.id}`);
+            } catch (queueErr: any) {
+                console.error(`[API] ❌ CRITICAL: Queue enqueue failed:`, queueErr.message);
+                
+                await updateJobStatusForError(reel.id, `Failed to enqueue job to Render worker. Redis/BullMQ error: ${queueErr.message}`);
+                
+                return NextResponse.json(
+                    { error: "Failed to connect to processing queue", details: queueErr.message },
+                    { status: 503 }
+                );
             }
         } else {
-            // Development: process inline (fire-and-forget)
+            // Development ONLY: process inline (fire-and-forget)
+            console.log(`[API] Local development detected. Running inline-processor.`);
             processReelInline(jobData).catch((err) => {
                 console.error(`[API] Background processing error for ${reel.id}:`, err);
             });
@@ -178,6 +185,17 @@ export async function POST(req: NextRequest) {
             { status: 500 }
         );
     }
+}
+
+// Helper to quickly fail a job if queueing fails completely
+async function updateJobStatusForError(reelId: string, errorMsg: string) {
+    try {
+        await db.reel.update({ where: { id: reelId }, data: { status: "FAILED" } });
+        await db.processingJob.update({
+            where: { reelId },
+            data: { status: "FAILED", error: errorMsg, progress: 0 }
+        });
+    } catch (e) {}
 }
 
 // GET /api/reels — List user's reels
