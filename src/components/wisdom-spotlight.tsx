@@ -22,12 +22,11 @@ export function WisdomSpotlight() {
         if (res.ok) {
           const data = await res.json();
           if (data.reels && data.reels.length > 0) {
-            // Pick a random one from the latest 5
             const selected = data.reels[Math.floor(Math.random() * data.reels.length)];
             setHighlight({
               id: selected.id,
               title: selected.title,
-              mainIdea: selected.mainIdea,
+              mainIdea: selected.summary?.slice(0, 150) + "..." || "Archived wisdom awaiting your activation.",
             });
           }
         }
@@ -43,35 +42,35 @@ export function WisdomSpotlight() {
   if (loading || !highlight) return null;
 
   return (
-    <div className="w-full relative group animate-page-entry mb-20 lg:mb-32">
-      <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 rounded-[3rem] blur-2xl opacity-20 group-hover:opacity-40 transition-opacity duration-1000" />
+    <div className="w-full relative group reveal-up mb-40 lg:mb-64">
+      <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 via-primary/5 to-primary/20 rounded-[4rem] blur-3xl opacity-10 group-hover:opacity-30 transition-opacity duration-1000" />
       
-      <div className="relative signature-card border-white/5 bg-card/20 backdrop-blur-3xl p-10 lg:p-16 overflow-hidden">
-        {/* Decorative corner icon */}
-        <div className="absolute top-10 right-10 opacity-5 group-hover:opacity-20 transition-all duration-1000 rotate-12 group-hover:rotate-0">
-          <Quote className="w-32 h-32 text-primary" />
+      <div className="relative velvet-card border-white/10 bg-card/40 backdrop-blur-3xl p-12 lg:p-24 overflow-hidden rounded-[4rem]">
+        {/* Dynamic Abstract Visual */}
+        <div className="absolute top-0 right-0 w-[50%] h-full opacity-10 group-hover:opacity-20 transition-all duration-1000 pointer-events-none">
+           <div className="absolute top-[-10%] right-[-10%] w-[120%] h-[120%] ig-gradient blur-[100px] rounded-full animate-breath-slow" />
         </div>
 
-        <div className="max-w-4xl relative z-10">
-          <div className="flex items-center gap-4 mb-10">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-primary" />
+        <div className="max-w-5xl relative z-10">
+          <div className="flex items-center gap-6 mb-12 stagger-1">
+            <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center shadow-2xl">
+              <Sparkles className="w-6 h-6 text-primary" />
             </div>
-            <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-primary/60">Insight of the Moment</span>
+            <span className="text-[11px] font-bold tracking-[0.5em] uppercase text-primary/60">Neural Spotlight</span>
           </div>
 
-          <h2 className="text-3xl lg:text-6xl font-heading mb-10 leading-[1.05] tracking-tight group-hover:text-primary transition-colors duration-700">
+          <h2 className="text-4xl lg:text-7xl font-heading mb-12 leading-[0.95] tracking-tighter text-white/90 group-hover:text-white transition-all duration-1000 text-balance stagger-2">
             {highlight.title}
           </h2>
 
-          <p className="text-lg lg:text-2xl text-muted-foreground/40 italic leading-relaxed mb-12 lg:mb-16 font-sans border-l-2 border-primary/20 pl-8 ml-2">
+          <p className="text-xl lg:text-3xl text-white/20 italic leading-relaxed mb-16 lg:mb-24 font-sans border-l border-primary/30 pl-10 ml-2 stagger-3">
             "{highlight.mainIdea}"
           </p>
 
-          <Link href={`/note/${highlight.id}`} className="group/btn flex items-center gap-4 text-[11px] font-bold uppercase tracking-[0.3em] text-primary hover:text-white transition-all duration-500">
-            Dive into full synthesis 
-            <div className="w-10 h-10 rounded-full border border-primary/20 flex items-center justify-center group-hover/btn:bg-primary group-hover/btn:border-primary transition-all duration-500">
-              <ArrowRight className="w-5 h-5 group-hover/btn:text-background transition-colors" />
+          <Link href={`/note/${highlight.id}`} className="group/btn inline-flex items-center gap-8 stagger-4 text-xs font-bold uppercase tracking-[0.4em] text-primary/80 hover:text-white transition-all duration-700">
+            Activate Full Synthesis 
+            <div className="w-16 h-16 rounded-full border border-primary/10 flex items-center justify-center group-hover/btn:bg-primary group-hover/btn:border-primary group-hover/btn:scale-110 group-hover/btn:rotate-[-45deg] transition-all duration-700 shadow-3xl">
+              <ArrowRight className="w-8 h-8 group-hover/btn:text-background transition-colors" />
             </div>
           </Link>
         </div>

@@ -54,9 +54,10 @@ export async function POST(req: NextRequest) {
         }
 
         // Rate limit check - Bypass if custom key exists
-        const hasCustomKey = (userDb.aiSettings as any)?.keys?.openrouter;
+        const aiSettings = userDb.aiSettings as { keys?: { openrouter?: string } } | null;
+        const hasCustomKey = aiSettings?.keys?.openrouter;
         if (!hasCustomKey) {
-            const rateCheck = checkRateLimit(userId);
+            const rateCheck = await checkRateLimit(userId);
             if (!rateCheck.allowed) {
                 const retryMinutes = Math.ceil((rateCheck.retryAfterMs || 0) / 60000);
                 return NextResponse.json(
@@ -143,7 +144,7 @@ export async function POST(req: NextRequest) {
             userId,
             sourceUrl: url,
             platform: validation.platform!,
-            aiSettings: userDb.aiSettings as any,
+            aiSettings: (userDb.aiSettings as any) || undefined,
         };
 
         const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "production";
@@ -155,21 +156,23 @@ export async function POST(req: NextRequest) {
                 const { addReelJob } = await import("@/lib/queue");
                 await addReelJob(jobData);
                 console.log(`[API] ✅ Job enqueued to BullMQ for ${reel.id}`);
-            } catch (queueErr: any) {
-                console.error(`[API] ❌ CRITICAL: Queue enqueue failed:`, queueErr.message);
+            } catch (queueErr: unknown) {
+                const message = queueErr instanceof Error ? queueErr.message : "Unknown queue error";
+                console.error(`[API] ❌ CRITICAL: Queue enqueue failed:`, message);
                 
-                await updateJobStatusForError(reel.id, `Failed to enqueue job to Render worker. Redis/BullMQ error: ${queueErr.message}`);
+                await updateJobStatusForError(reel.id, `Failed to enqueue job to Render worker. Redis/BullMQ error: ${message}`);
                 
                 return NextResponse.json(
-                    { error: "Failed to connect to processing queue", details: queueErr.message },
+                    { error: "Failed to connect to processing queue", details: message },
                     { status: 503 }
                 );
             }
         } else {
             // Development ONLY: process inline (fire-and-forget)
             console.log(`[API] Local development detected. Running inline-processor.`);
-            processReelInline(jobData).catch((err) => {
-                console.error(`[API] Background processing error for ${reel.id}:`, err);
+            processReelInline(jobData as any).catch((err) => {
+                const message = err instanceof Error ? err.message : "Unknown processing error";
+                console.error(`[API] Background processing error for ${reel.id}:`, message);
             });
         }
 
@@ -210,11 +213,6 @@ export async function GET(req: NextRequest) {
         const { searchParams } = new URL(req.url);
         const folderId = searchParams.get("folderId");
         const status = searchParams.get("status");
-        
-        // Trigger stale job cleanup occasionally (lazy maintenance)
-        import("@/lib/cleanup-stale-jobs").then(({ cleanupStaleJobs }) => {
-            cleanupStaleJobs().catch(e => console.error("[API] Stale job cleanup error:", e));
-        });
 
         const limit = parseInt(searchParams.get("limit") || "20", 10);
         const offset = parseInt(searchParams.get("offset") || "0", 10);

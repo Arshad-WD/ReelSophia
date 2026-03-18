@@ -27,6 +27,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   const refreshUser = async () => {
+    if (user && !loading) return; // Already have a user
+    setLoading(true);
     try {
       const res = await fetch("/api/auth/me");
       if (res.ok) {

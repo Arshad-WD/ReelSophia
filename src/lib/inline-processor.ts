@@ -81,7 +81,7 @@ export async function processReelInline(data: {
 
         // Stage 0: Extract Metadata (Fast & Reliable)
         await updateJobStatus(reelId, "DOWNLOADING", 5);
-        let metadata = { title: "", description: "", uploader: "" };
+        const metadata = { title: "", description: "", uploader: "" };
         try {
             console.log(`[Inline] Extracting metadata for: ${sourceUrl}`);
             
@@ -226,7 +226,7 @@ export async function processReelInline(data: {
                 }
             } catch {}
 
-            let dlCmd = `python3 -m yt_dlp "${finalUrl}" -f "${formatStr}" -o "${videoPath}" --max-filesize 50M --no-playlist --no-warnings ${ytArgs} ${cookieAuth} --user-agent "${chromeUA}" --add-header "Referer:https://www.${platform}.com/" --add-header "Origin:https://www.${platform}.com"`;
+            const dlCmd = `python3 -m yt_dlp "${finalUrl}" -f "${formatStr}" -o "${videoPath}" --max-filesize 50M --no-playlist --no-warnings ${ytArgs} ${cookieAuth} --user-agent "${chromeUA}" --add-header "Referer:https://www.${platform}.com/" --add-header "Origin:https://www.${platform}.com"`;
             
             console.log(`[Inline] Running download: ${dlCmd.replace(/--user-agent.*$/, '--user-agent "..."')}`);
             try {

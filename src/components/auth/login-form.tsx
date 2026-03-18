@@ -113,74 +113,83 @@ export function LoginForm() {
 
 
   return (
-    <div className="w-full space-y-8 py-4">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-[0.2em] ml-1">
-              Vault Email
+    <div className="w-full space-y-10 py-2">
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="space-y-6">
+          <div className="space-y-3">
+            <label className="text-[10px] text-white/20 font-bold uppercase tracking-[0.4em] ml-2">
+              Neural Identifier
             </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full bg-white/[0.03] border border-white/5 focus:border-primary/50 rounded-2xl p-4 text-foreground outline-none transition-all duration-500 text-sm"
-              placeholder="name@example.com"
-            />
+            <div className="relative group/input">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full bg-white/[0.02] border border-white/5 focus:border-primary/40 focus:bg-white/[0.04] rounded-2xl p-5 text-white outline-none transition-all duration-700 text-sm placeholder:text-white/10"
+                placeholder="architect@reelsophia.io"
+              />
+              <div className="absolute inset-0 rounded-2xl shimmer-border opacity-0 group-focus-within/input:opacity-30 pointer-events-none" />
+            </div>
           </div>
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <label className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-[0.2em] ml-1">
+          <div className="space-y-3">
+            <div className="flex justify-between items-center ml-2">
+              <label className="text-[10px] text-white/20 font-bold uppercase tracking-[0.4em]">
                 Security Key
               </label>
             </div>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full bg-white/[0.03] border border-white/5 focus:border-primary/50 rounded-2xl p-4 text-foreground outline-none transition-all duration-500 text-sm"
-              placeholder="••••••••"
-            />
+            <div className="relative group/input">
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full bg-white/[0.02] border border-white/5 focus:border-primary/40 focus:bg-white/[0.04] rounded-2xl p-5 text-white outline-none transition-all duration-700 text-sm placeholder:text-white/10"
+                placeholder="••••••••••••"
+              />
+              <div className="absolute inset-0 rounded-2xl shimmer-border opacity-0 group-focus-within/input:opacity-30 pointer-events-none" />
+            </div>
           </div>
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="btn-signature w-full disabled:opacity-50"
+          className="group relative w-full py-6 rounded-2xl bg-white text-background text-[11px] font-bold uppercase tracking-[0.5em] transition-all duration-700 hover:bg-primary active:scale-95 shadow-2xl overflow-hidden disabled:opacity-50"
         >
-          {loading ? "Decrypting..." : "Access Vault"}
+          <div className="absolute inset-0 shimmer-border opacity-0 group-hover:opacity-100 transition-opacity" />
+          <span className="relative z-10 flex items-center justify-center gap-3">
+            {loading ? "Decrypting..." : "Initiate Sync"}
+          </span>
         </button>
       </form>
 
-      <div className="relative py-4">
+      <div className="relative py-8">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-white/5"></div>
         </div>
-        <div className="relative flex justify-center text-[10px] uppercase tracking-[0.3em]">
-          <span className="bg-background px-4 text-muted-foreground/30 font-bold">Protocol Shift</span>
+        <div className="relative flex justify-center text-[9px] uppercase tracking-[0.6em]">
+          <span className="bg-transparent px-6 text-white/10 font-bold italic">Secondary Protocol</span>
         </div>
       </div>
 
-      <div className="relative w-full flex justify-center min-h-[50px]">
+      <div className="relative w-full flex justify-center min-h-[56px]">
         <div 
           ref={googleButtonRef} 
           className="w-full flex justify-center"
         />
         {!scriptLoaded && (
-          <div className="absolute inset-0 w-full bg-white/[0.05] animate-pulse h-[50px] rounded-2xl flex items-center justify-center pointer-events-none">
-            <span className="text-[10px] text-white/20 uppercase tracking-widest font-bold">Initializing Auth Protocol...</span>
+          <div className="absolute inset-0 w-full bg-white/[0.02] animate-pulse h-[56px] rounded-2xl flex items-center justify-center border border-white/5 pointer-events-none">
+            <span className="text-[9px] text-white/10 uppercase tracking-[0.5em] font-bold">Synchronizing...</span>
           </div>
         )}
       </div>
 
-      <div className="text-center pt-4">
-        <p className="text-[11px] text-muted-foreground/40 uppercase tracking-widest leading-loose">
-          New to the system?{" "}
-          <Link href="/sign-up" className="text-primary hover:text-white transition-colors duration-500 font-bold">
-            Register for Access
+      <div className="text-center pt-8">
+        <p className="text-[10px] text-white/20 uppercase tracking-[0.4em] leading-loose">
+          Awaiting Credentials?{" "}
+          <Link href="/sign-up" className="text-primary hover:text-white transition-all duration-500 font-bold border-b border-primary/20 hover:border-white">
+            Register Segment
           </Link>
         </p>
       </div>

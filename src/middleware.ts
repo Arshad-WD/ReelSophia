@@ -10,11 +10,16 @@ export async function middleware(request: NextRequest) {
 
   // Public paths
   if (
+    pathname === "/" ||
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/sign-in") ||
     pathname.startsWith("/sign-up") ||
+    pathname.startsWith("/images") ||
     pathname === "/manifest.json" ||
-    pathname.startsWith("/favicon")
+    pathname.startsWith("/favicon") ||
+    pathname.startsWith("/icon-") ||
+    pathname.endsWith(".ico") ||
+    pathname.endsWith(".png")
   ) {
     return NextResponse.next();
   }

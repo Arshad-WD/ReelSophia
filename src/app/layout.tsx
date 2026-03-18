@@ -5,8 +5,19 @@ import { UIProvider } from "@/lib/ui-context";
 import "./globals.css";
 
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-sans", display: 'swap' });
-const dmSerif = DM_Serif_Display({ weight: "400", subsets: ["latin"], variable: "--font-heading", display: 'swap' });
-const jetBrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: 'swap' });
+const dmSerif = DM_Serif_Display({ 
+  weight: "400", 
+  subsets: ["latin"], 
+  variable: "--font-heading", 
+  display: 'swap',
+  preload: false 
+});
+const jetBrainsMono = JetBrains_Mono({ 
+  subsets: ["latin"], 
+  variable: "--font-mono", 
+  display: 'swap',
+  preload: false 
+});
 
 export const metadata: Metadata = {
   title: "ReelSophia — Knowledge from Reels",

@@ -161,186 +161,162 @@ export default function AddReelPage() {
   const platform = detectPlatform(url);
 
   return (
-    <div className="pt-12 lg:pt-20 pb-32 px-5 lg:px-10 max-w-[800px] mx-auto min-h-screen animate-page-entry relative">
-      {/* Premium Background Ethereal Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
+    <div className="min-h-screen bg-background text-foreground relative overflow-hidden neural-field">
+      {/* ── Ultra-Premium Background Architecture ── */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        <div 
+          className="absolute inset-0 opacity-[0.03] mix-blend-screen scale-[1.1] transition-transform duration-[2000ms] ease-out"
+          style={{ 
+            backgroundImage: "url('/images/neural-bg.png')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[600px] ig-gradient opacity-[0.08] blur-[160px] rounded-full animate-breath-slow" />
+      </div>
 
-      {/* Header */}
-      <header className="mb-12 text-center relative z-10">
-        <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold uppercase tracking-widest mb-6 shadow-[0_0_20px_rgba(245,158,11,0.15)]">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>New Entry</span>
-        </div>
-        <h1 className="text-4xl lg:text-5xl font-bold text-foreground tracking-tight mb-4">
-          Capture Knowledge
-        </h1>
-        <p className="text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">
-          Paste a link from <span className="text-foreground font-semibold">Instagram</span>,{" "}
-          <span className="text-foreground font-semibold">YouTube</span>, or{" "}
-          <span className="text-foreground font-semibold">TikTok</span> to magically extract insights.
-        </p>
-      </header>
+      <div className="relative z-10 pt-24 lg:pt-32 pb-40 px-6 max-w-4xl mx-auto">
+        {/* Header: Editorial Style */}
+        <header className="mb-20 text-center reveal-up">
+          <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full border border-white/[0.08] bg-white/[0.02] backdrop-blur-xl mb-10 group hover:border-primary/40 transition-all duration-700">
+            <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+            <span className="text-[10px] font-bold tracking-[0.6em] uppercase text-white/40 group-hover:text-white transition-colors">Synthesis Laboratory</span>
+          </div>
+          <h1 className="text-6xl lg:text-8xl font-heading tracking-tighter text-white mb-6 drop-shadow-3xl">
+            Content <br />
+            <span className="text-ig-gradient italic font-normal">Transmutation.</span>
+          </h1>
+          <p className="text-lg text-white/30 font-serif italic max-w-xl mx-auto leading-relaxed">
+            Distilling raw social streams into structured architectural intelligence.
+          </p>
+        </header>
 
-      {/* Form Container */}
-      <section className="animate-in slide-in-from-bottom-8 duration-700 delay-100 fill-mode-both relative z-10">
-        <div className="signature-card p-6 lg:p-8">
-          
-          <div className="space-y-6">
-            {/* URL Input */}
-            <div className="relative group">
-              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 pl-1">
-                Content URL
-              </label>
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl blur-lg opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 pointer-events-none" />
-              <div className="relative flex items-center">
-                <Link2 className="absolute left-5 w-5 h-5 text-muted-foreground/50 group-focus-within:text-primary transition-colors duration-300 z-10" />
-                <input
-                  type="url"
-                  placeholder="https://..."
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  className="w-full h-16 bg-background/50 backdrop-blur-md rounded-2xl border border-white/[0.08] focus:border-primary/50 focus:bg-background/80 transition-all duration-300 pl-14 pr-16 text-base font-medium text-foreground placeholder:text-muted-foreground/30 outline-none shadow-inner"
-                  disabled={submitting || !!processing}
-                />
-                
-                {url && (
-                  <button 
-                    onClick={() => setUrl("")}
-                    className="absolute right-[4.5rem] p-1.5 rounded-full hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors z-10"
-                    title="Clear input"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-
-                {url && platform && (
-                  <div className="absolute right-3 z-10 animate-in zoom-in duration-300">
-                    <div className="w-10 h-10 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.2)]">
-                      {platform === "instagram" && <Instagram className="w-5 h-5 text-primary" />}
-                      {platform === "youtube" && <Youtube className="w-5 h-5 text-primary" />}
-                      {!["instagram", "youtube"].includes(platform) && <Globe className="w-5 h-5 text-primary" />}
-                    </div>
+        {/* Command Island: The Form */}
+        <section className="reveal-up stagger-1">
+          <div className="velvet-card p-10 sm:p-14 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.8)] border-white/[0.05] relative overflow-hidden group">
+            <div className="absolute inset-0 shimmer-border opacity-20 pointer-events-none" />
+            
+            <div className="space-y-12">
+              {/* URL Synthesis Input */}
+              <div className="space-y-4">
+                <label className="text-[10px] text-white/20 font-bold uppercase tracking-[0.5em] ml-2">
+                  Source Flux URL
+                </label>
+                <div className="relative group/input">
+                  <div className="absolute left-6 top-1/2 -translate-y-1/2 z-20 transition-transform duration-700 group-focus-within/input:scale-110">
+                    {platform === "instagram" && <Instagram className="w-6 h-6 text-primary" />}
+                    {platform === "youtube" && <Youtube className="w-6 h-6 text-primary" />}
+                    {platform === "tiktok" && <Globe className="w-6 h-6 text-primary" />}
+                    {!platform && <Link2 className="w-6 h-6 text-white/20 group-focus-within/input:text-primary transition-colors" />}
                   </div>
-                )}
+                  <input
+                    type="url"
+                    placeholder="https://..."
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    disabled={submitting || !!processing}
+                    className="w-full bg-white/[0.02] border border-white/5 focus:border-primary/40 focus:bg-white/[0.04] rounded-[2rem] p-8 pl-16 pr-10 text-white outline-none transition-all duration-700 text-lg placeholder:text-white/5 font-serif italic"
+                  />
+                  <div className="absolute inset-0 rounded-[2rem] shimmer-border opacity-0 group-focus-within/input:opacity-30 pointer-events-none" />
+                </div>
               </div>
-            </div>
 
-            {/* Folder Selector */}
-            <div className="relative">
-              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 pl-1">
-                Collection
-              </label>
-              <div className="bg-background/40 backdrop-blur-md rounded-2xl border border-white/[0.08] overflow-hidden transition-all duration-300 hover:border-white/[0.15]">
-                <button
-                  onClick={() => setShowFolders(!showFolders)}
-                  className="flex items-center justify-between w-full h-16 px-5 group"
-                  disabled={!!processing}
-                >
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <div className={cn(
-                      "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300",
-                      selectedFolder ? "bg-primary/10 text-primary border border-primary/20" : "bg-white/5 text-muted-foreground border border-white/10 group-hover:bg-white/10"
-                    )}>
-                      {selectedFolder && selectedFolder.icon ? (
-                         <span className="text-lg">{selectedFolder.icon}</span>
-                      ) : (
-                         <FolderPlus className="w-5 h-5" />
-                      )}
+              {/* Collection Matrix */}
+              <div className="space-y-4">
+                <label className="text-[10px] text-white/20 font-bold uppercase tracking-[0.5em] ml-2">
+                  Destination Matrix
+                </label>
+                <div className="relative">
+                  <button
+                    onClick={() => !processing && setShowFolders(!showFolders)}
+                    className="w-full flex items-center justify-between p-7 rounded-[1.5rem] bg-white/[0.01] border border-white/5 hover:border-white/10 hover:bg-white/[0.03] transition-all duration-500 group"
+                  >
+                    <div className="flex items-center gap-6">
+                      <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center text-xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                        {selectedFolder?.icon || "📁"}
+                      </div>
+                      <div className="text-left">
+                        <p className="text-[13px] font-bold text-white group-hover:text-primary transition-colors">
+                          {selectedFolder?.name || "Uncategorized Archives"}
+                        </p>
+                        <p className="text-[10px] text-white/20 uppercase tracking-widest mt-1">Select Collection</p>
+                      </div>
                     </div>
-                    <div className="text-left flex flex-col justify-center flex-1 min-w-0">
-                      <span className="text-[15px] font-semibold text-foreground group-hover:text-primary transition-colors duration-300 truncate w-full">
-                        {selectedFolder ? selectedFolder.name : "General (Uncategorized)"}
-                      </span>
-                    </div>
-                  </div>
-                  <ChevronDown className={cn(
-                    "w-5 h-5 text-muted-foreground transition-transform duration-300 group-hover:text-foreground",
-                    showFolders && "rotate-180 text-primary"
-                  )} />
-                </button>
+                    <ChevronDown className={cn("w-5 h-5 text-white/10 transition-transform duration-700", showFolders && "rotate-180 text-primary")} />
+                  </button>
 
-                {showFolders && (
-                  <div className="p-3 border-t border-white/[0.08] animate-in slide-in-from-top-2 fade-in duration-200 bg-background/50">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
-                      <button
-                        onClick={() => { setFolderId(null); setShowFolders(false); }}
-                        className={cn(
-                          "px-4 py-3 rounded-xl border text-left text-sm font-medium transition-all duration-300 flex items-center gap-3",
-                          !folderId
-                            ? "bg-primary/15 border-primary/40 text-primary shadow-[0_0_15px_rgba(245,158,11,0.1)]"
-                            : "border-white/[0.05] bg-white/[0.02] text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"
-                        )}
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
-                           <FolderPlus className="w-4 h-4 opacity-50" />
-                        </div>
-                        None
-                      </button>
-                      {folders.map((folder) => (
+                  {showFolders && (
+                    <div className="absolute top-full left-0 right-0 mt-4 p-4 velvet-card z-50 animate-in slide-in-from-top-4 duration-500 border-white/10">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto custom-scrollbar p-2">
                         <button
-                          key={folder.id}
-                          onClick={() => { setFolderId(folder.id); setShowFolders(false); }}
+                          onClick={() => { setFolderId(null); setShowFolders(false); }}
                           className={cn(
-                            "px-4 py-3 rounded-xl border text-left transition-all duration-300 flex items-center gap-3 group",
-                            folderId === folder.id
-                              ? "bg-primary/15 border-primary/40 text-primary shadow-[0_0_15px_rgba(245,158,11,0.1)]"
-                              : "border-white/[0.05] bg-white/[0.02] text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"
+                            "flex items-center gap-4 p-4 rounded-xl border transition-all duration-500",
+                            !folderId ? "bg-white/[0.05] border-white/20 text-white shadow-xl" : "bg-transparent border-white/5 text-white/40 hover:text-white hover:bg-white/[0.02]"
                           )}
                         >
-                          <div className={cn(
-                            "w-8 h-8 rounded-lg flex items-center justify-center text-lg transition-colors",
-                            folderId === folder.id ? "bg-primary/20" : "bg-white/5 group-hover:bg-white/10"
-                          )}>
-                             {folder.icon || "📁"}
-                          </div>
-                          <span className="text-sm font-medium truncate flex-1">{folder.name}</span>
+                          <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-sm">📁</div>
+                          <span className="text-[11px] font-bold uppercase tracking-widest">General Archive</span>
                         </button>
-                      ))}
+                        {folders.map((folder) => (
+                          <button
+                            key={folder.id}
+                            onClick={() => { setFolderId(folder.id); setShowFolders(false); }}
+                            className={cn(
+                              "flex items-center gap-4 p-4 rounded-xl border transition-all duration-500",
+                              folderId === folder.id ? "bg-white/[0.05] border-white/20 text-white shadow-xl" : "bg-transparent border-white/5 text-white/40 hover:text-white hover:bg-white/[0.02]"
+                            )}
+                          >
+                            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-sm">{folder.icon || "📁"}</div>
+                            <span className="text-[11px] font-bold uppercase tracking-widest truncate">{folder.name}</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
 
-            {/* Submit Button */}
-            <div className="pt-4">
+              {/* Action Button */}
               <button
                 onClick={handleSubmit}
                 disabled={submitting || !url.trim() || !!processing}
-                className={cn(
-                  "btn-signature w-full h-16 group",
-                  (!url.trim() || !!processing || submitting) && "opacity-50 cursor-not-allowed hover:transform-none hover:shadow-none bg-muted text-muted-foreground"
-                )}
+                className="group relative w-full py-8 rounded-[2rem] bg-white text-background text-sm font-bold uppercase tracking-[0.8em] transition-all duration-700 hover:bg-primary hover:tracking-[0.9em] active:scale-95 shadow-2xl overflow-hidden disabled:opacity-50"
               >
-                {submitting ? (
-                  <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    <span className="font-bold tracking-[0.2em] text-sm">Processing...</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-3">
-                    <Sparkles className="w-5 h-5 absolute left-[30%] opacity-0 group-hover:opacity-100 group-hover:-translate-y-6 transition-all duration-700 text-primary" />
-                    <span className="font-bold tracking-[0.2em] text-sm relative z-10">Extract Knowledge</span>
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300 relative z-10" />
-                  </div>
-                )}
+                <div className="absolute inset-0 shimmer-border opacity-0 group-hover:opacity-100 transition-opacity" />
+                <span className="relative z-10 flex items-center justify-center gap-6">
+                  {submitting ? "Processing Flow..." : "Initiate Extraction"}
+                  {!submitting && <ArrowRight className="w-5 h-5 group-hover:translate-x-3 transition-transform duration-700" />}
+                </span>
               </button>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Processing State */}
-      {processing && (
-        <section className="mt-12 relative z-10 animate-in slide-in-from-bottom-4 duration-1000">
-          <ProcessingStatus
-            status={processing.status}
-            progress={processing.progress}
-            error={processing.error}
-            className="w-full"
-          />
         </section>
-      )}
+
+        {/* Processing Matrix */}
+        {processing && (
+          <section className="mt-20 reveal-up">
+            <div className="velvet-card p-10 border-primary/20 bg-primary/[0.02]">
+              <div className="flex items-center gap-6 mb-10">
+                 <div className="w-12 h-12 rounded-full border-2 border-primary border-t-transparent animate-spin shrink-0" />
+                 <div>
+                   <p className="text-[10px] font-bold uppercase tracking-[0.6em] text-primary mb-1">Activating Neural Synthesis</p>
+                   <p className="text-xl text-white font-serif italic">Decoding content stream...</p>
+                 </div>
+              </div>
+              <ProcessingStatus
+                status={processing.status}
+                progress={processing.progress}
+                error={processing.error}
+                className="w-full bg-transparent border-none shadow-none p-0"
+              />
+            </div>
+          </section>
+        )}
+      </div>
+      <footer className="fixed bottom-10 left-10 opacity-10 pointer-events-none">
+        <p className="font-mono text-[8px] uppercase tracking-[1.5em] text-white">Sophia OS // Laboratory v3.0</p>
+      </footer>
     </div>
   );
 }

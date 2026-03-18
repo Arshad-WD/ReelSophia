@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { Home, Library, PlusCircle, Search, Settings, LayoutGrid, X } from "lucide-react";
+import Image from "next/image";
+import { Home, Library, PlusCircle, Search, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -15,78 +16,62 @@ const NAV_ITEMS = [
 ];
 
 export function BottomNav() {
-  const [isExpanded, setIsExpanded] = useState(false);
   const pathname = usePathname();
   const { user } = useAuth();
 
   return (
-    <div className="lg:hidden fixed bottom-8 inset-x-0 z-[100] px-6 pointer-events-none">
-      <div className="flex flex-col items-center gap-6">
+    <div className="lg:hidden fixed bottom-10 inset-x-0 z-[100] flex justify-center px-6 pointer-events-none">
+      <nav className="flex items-center gap-1 p-2 bg-white/[0.01] backdrop-blur-[40px] border border-white/[0.08] rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-auto relative overflow-hidden group">
+        <div className="absolute inset-0 shimmer-border opacity-20" />
         
-        {/* ── Navigation Stack (The "Fan-out" menu) ── */}
-        <div className={cn(
-          "flex flex-col gap-3 transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] items-center pointer-events-auto",
-          isExpanded ? "mb-4 opacity-100 translate-y-0 scale-100" : "mb-0 opacity-0 translate-y-8 scale-50 h-0 overflow-hidden"
-        )}>
-           {NAV_ITEMS.map((item, idx) => {
-             const isActive = pathname === item.href;
-             const Icon = item.icon;
-             return (
-               <Link
-                 key={item.href}
-                 href={item.href}
-                 onClick={() => setIsExpanded(false)}
-                 className={cn(
-                   "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 relative",
-                   "bg-white/[0.04] backdrop-blur-xl border border-white/[0.08] shadow-xl",
-                   isActive ? "text-white border-primary/40 bg-white/[0.1] shadow-[0_0_20px_rgba(225,48,108,0.2)]" : "text-white/20 hover:text-white/50"
-                 )}
-                 style={{ transitionDelay: `${(NAV_ITEMS.length - idx) * 30}ms` }}
-               >
-                 <Icon className={cn("w-5 h-5 transition-transform duration-300", isActive && "scale-110")} />
-                 {isActive && (
-                   <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 ig-gradient rounded-full shadow-[0_0_8px_var(--color-primary)]" />
-                 )}
-               </Link>
-             );
-           })}
-        </div>
+        {NAV_ITEMS.map((item) => {
+          const isActive = pathname === item.href;
+          const Icon = item.icon;
 
-        {/* ── The Dynamic Control Island ── */}
-        <div className="flex items-center gap-3 p-2 bg-white/[0.02] backdrop-blur-xl border border-white/[0.05] rounded-full shadow-2xl pointer-events-auto relative overflow-hidden group/island">
-          {/* Main Toggle */}
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className={cn(
-              "w-14 h-14 rounded-full flex items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] relative z-10 shadow-lg",
-              isExpanded ? "bg-white text-black rotate-90" : "ig-gradient text-white"
-            )}
-          >
-            {isExpanded ? <X className="w-6 h-6" /> : <LayoutGrid className="w-6 h-6" />}
-          </button>
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "relative flex items-center justify-center w-14 h-14 rounded-full transition-all duration-500",
+                isActive 
+                  ? "text-white bg-white/[0.08] shadow-[0_0_20px_rgba(255,255,255,0.05)] scale-110" 
+                  : "text-white/20 hover:text-white/40"
+              )}
+            >
+              <Icon className={cn(
+                "w-5 h-5 transition-all duration-500",
+                isActive ? "scale-110" : "active:scale-125"
+              )} />
+              
+              {isActive && (
+                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)]" />
+              )}
+            </Link>
+          );
+        })}
 
-          {/* Quick Peek: Active Icon */}
-          {!isExpanded && (
-            <div className="flex items-center px-3 gap-4 animate-in fade-in slide-in-from-right-4 duration-400">
-               <div className="h-4 w-[1px] bg-white/[0.08]" />
-               <Link href="/settings" className="w-9 h-9 rounded-full border border-white/[0.08] p-[1.5px] hover:border-primary/40 transition-all duration-300 overflow-hidden relative">
-                 {user?.imageUrl ? (
-                   <img src={user.imageUrl} alt="Profile" className="w-full h-full object-cover" />
-                 ) : (
-                   <div className="w-full h-full flex items-center justify-center text-[9px] font-bold text-primary bg-white/[0.02]">
-                     {user?.name?.[0] || "?"}
-                   </div>
-                 )}
-               </Link>
+        <div className="w-[1px] h-6 bg-white/[0.08] mx-2" />
+
+        <Link 
+          href="/settings"
+          className="w-12 h-12 rounded-full border border-white/[0.08] p-[1.5px] hover:border-primary/40 transition-all duration-500 overflow-hidden relative shadow-lg"
+        >
+          {user?.imageUrl ? (
+            <Image 
+              src={user.imageUrl} 
+              alt="Profile" 
+              width={48} 
+              height={48} 
+              className="w-full h-full object-cover" 
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-primary italic bg-white/[0.01]">
+              {user?.name?.[0] || "?"}
             </div>
           )}
-        </div>
-
-        {/* Swipe Feedback */}
-        {isExpanded && (
-          <div className="fixed inset-0 -z-10 bg-background/60 backdrop-blur-sm animate-in fade-in duration-500" onClick={() => setIsExpanded(false)} />
-        )}
-      </div>
+        </Link>
+      </nav>
     </div>
   );
 }

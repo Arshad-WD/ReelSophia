@@ -62,6 +62,13 @@
   background: linear-gradient(45deg, oklch(0.72 0.18 70) 0%, oklch(0.65 0.20 30) 50%, oklch(0.55 0.23 350) 100%);
 }
 
+@utility text-ig-gradient {
+  background: linear-gradient(45deg, oklch(0.72 0.18 70) 0%, oklch(0.65 0.20 30) 50%, oklch(0.55 0.23 350) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 @utility signature-card {
   @apply bg-card backdrop-blur-xl relative transition-[transform,opacity,border-color,box-shadow] duration-400 ease-[cubic-bezier(0.16,1,0.3,1)];
   border: 1px solid oklch(1 0 0 / 0.08); 
@@ -69,7 +76,6 @@
   box-shadow: 
     0 32px 64px -16px rgba(0, 0, 0, 0.6),
     inset 0 0 0 1px rgba(255, 255, 255, 0.03);
-  will-change: transform, opacity;
   
   @media (max-width: 768px) {
     border-radius: 3rem;
@@ -107,7 +113,38 @@
   border: 1px solid oklch(1 0 0 / 0.08);
   border-radius: 2.5rem;
   box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.3);
-  will-change: transform;
+}
+
+@utility velvet-card {
+  @apply relative bg-white/[0.04] backdrop-blur-3xl transition-all duration-700;
+  border: 1px solid oklch(1 0 0 / 0.06);
+  border-radius: 2rem;
+  box-shadow: 
+    0 24px 48px -12px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+/* ── High-End Shimmer/Glow Utilities ── */
+@utility shimmer-border {
+  @apply relative overflow-hidden;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -100%;
+    background: linear-gradient(
+      45deg,
+      transparent 45%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 55%
+    );
+    animation: shimmer 5s infinite;
+  }
+}
+
+@utility neural-field {
+  background: 
+    radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), oklch(0.65 0.20 30 / 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 80% 20%, oklch(0.72 0.18 70 / 0.1) 0%, transparent 50%);
 }
 
 @layer base {
@@ -130,27 +167,50 @@
         radial-gradient(circle at 90% 90%, oklch(0.55 0.23 350 / 0.08) 0%, transparent 45%);
       filter: blur(80px);
       animation: fabric-shift 15s ease-in-out infinite alternate;
-      will-change: transform;
       transform: translateZ(0);
     }
-/* ... rest of the file ... */
 
-    /* ── Optimized Grain ── */
+    /* ── Animated Noise Overlay ── */
     &::after {
       content: "";
       position: fixed;
-      inset: 0;
+      inset: -200%;
       z-index: 50;
-      opacity: 0.03;
+      opacity: 0.04;
       pointer-events: none;
       background-image: url('https://grainy-gradients.vercel.app/noise.svg');
+      animation: noise-move 1s steps(2) infinite;
       mix-blend-mode: overlay;
     }
   }
 
   h1, h2, h3, h4 {
-    @apply font-heading tracking-tight leading-[1.1] text-balance font-extrabold;
+    @apply font-heading tracking-tight text-balance font-extrabold;
   }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(-45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(-45deg); }
+}
+
+@keyframes noise-move {
+  0% { transform: translate(0, 0); }
+  10% { transform: translate(-5%, -5%); }
+  20% { transform: translate(-10%, 5%); }
+  30% { transform: translate(5%, -10%); }
+  40% { transform: translate(-5%, 15%); }
+  50% { transform: translate(-10%, 5%); }
+  60% { transform: translate(15%, 0); }
+  70% { transform: translate(0, 10%); }
+  80% { transform: translate(-15%, 0); }
+  90% { transform: translate(10%, 5%); }
+  100% { transform: translate(5%, 0); }
+}
+
+@keyframes parallax-hero {
+  0% { transform: translateY(0) scale(1.05); }
+  100% { transform: translateY(-30px) scale(1); }
 }
 
 @keyframes fabric-shift {
@@ -165,7 +225,6 @@
 }
 .animate-page-entry { 
   animation: page-entry 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
-  will-change: transform, opacity;
 }
 
 @keyframes breath-glow {
@@ -174,7 +233,6 @@
 }
 .animate-breath-glow {
   animation: breath-glow 8s ease-in-out infinite;
-  will-change: opacity, transform, filter;
 }
 
 @keyframes breath-slow {
@@ -211,6 +269,20 @@
   animation: glitch-text 4s linear infinite;
 }
 
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(30px); filter: blur(10px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+.reveal-up {
+  opacity: 0;
+  animation: reveal-up 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.stagger-1 { animation-delay: 100ms; }
+.stagger-2 { animation-delay: 200ms; }
+.stagger-3 { animation-delay: 300ms; }
+.stagger-4 { animation-delay: 400ms; }
+.stagger-5 { animation-delay: 500ms; }
+
 .spotlight-hover::before {
   content: '';
   position: absolute;
@@ -222,4 +294,4 @@
   pointer-events: none;
 }
 .spotlight-hover:hover::before { opacity: 1; }
-
+:before { opacity: 1; }

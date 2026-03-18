@@ -64,107 +64,105 @@ export function ProcessingStatus({ status, progress, error, className }: Process
   const isAnimated = !["COMPLETED", "FAILED"].includes(status);
 
   return (
-    <div className={cn("relative py-20 flex flex-col items-center justify-center overflow-hidden", className)}>
-      {/* The Background Neural Field */}
-      <div className="absolute inset-0 -z-10 bg-[#07050a]">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] animate-breath-glow" />
+    <div className={cn("relative py-24 flex flex-col items-center justify-center overflow-hidden", className)}>
+      {/* ── Neural field visualization ── */}
+      <div className="absolute inset-0 pointer-events-none opacity-20">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-primary/10 blur-[150px] animate-breath-slow rounded-full" />
       </div>
 
-      {/* The Central Monolith UI */}
-      <div className="relative w-full max-w-lg animate-neural-float">
-        
-        {/* Top Header - Technical Spec */}
-        <div className="flex justify-between items-end mb-12 px-2 border-b border-white/[0.05] pb-4">
-          <div className="flex flex-col gap-1">
-             <span className="text-[8px] font-mono tracking-[0.4em] text-white/20 uppercase">Module // Synthesis</span>
-             <h3 className="font-heading text-xl italic font-bold tracking-tight text-primary/90">
-               Discovery in Progress
-             </h3>
-          </div>
-          <div className="text-right">
-             <span className="text-[10px] font-mono text-white/30 tracking-widest uppercase">Stability: 99.4%</span>
-          </div>
+      <div className="relative w-full max-w-xl group">
+        {/* Technical Perimeter */}
+        <div className="absolute -inset-10 border border-white/[0.03] rounded-[3rem] pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity duration-1000 overflow-hidden">
+          <div className="absolute top-0 left-0 w-40 h-[1px] bg-primary animate-parallax-hero" />
+          <div className="absolute bottom-0 right-0 w-40 h-[1px] bg-primary animate-parallax-hero" style={{ animationDirection: "reverse" }} />
         </div>
 
-        {/* The "Brain" - Central Dynamic Icon */}
-        <div className="flex flex-col items-center justify-center py-16 relative">
-          {/* Pulsing Core Rings */}
+        {/* Central Intelligence Core */}
+        <div className="flex flex-col items-center justify-center py-20 relative px-6">
+          {/* Pulsating Multi-layer Rings */}
           {isAnimated && (
-            <>
-              <div className="absolute w-32 h-32 rounded-full border border-primary/20 animate-pulse-ring" />
-              <div className="absolute w-44 h-44 rounded-full border border-primary/10 animate-pulse-ring [animation-delay:1s]" />
-              <div className="absolute w-56 h-56 rounded-full border border-primary/5 animate-pulse-ring [animation-delay:2s]" />
-            </>
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-48 h-48 rounded-full border border-primary/20 animate-pulse-ring" />
+              <div className="w-72 h-72 rounded-full border border-primary/10 animate-pulse-ring [animation-delay:0.5s]" />
+              <div className="w-96 h-96 rounded-full border border-primary/5 animate-pulse-ring [animation-delay:1s]" />
+            </div>
           )}
 
           <div className={cn(
-            "w-24 h-24 rounded-full bg-white/[0.03] backdrop-blur-3xl border border-white/10 flex items-center justify-center relative z-10 transition-all duration-1000",
-             isAnimated ? "group-hover:scale-110 shadow-[0_0_50px_rgba(225,48,108,0.2)]" : "shadow-none"
+            "w-28 h-28 rounded-[2.5rem] bg-white/[0.02] backdrop-blur-[100px] border border-white/10 flex items-center justify-center relative z-10 transition-all duration-1000 overflow-hidden",
+            isAnimated ? "shadow-[0_0_80px_rgba(255,255,255,0.05)] rotate-3" : "shadow-none"
           )}>
-            <div className="absolute inset-0 bg-primary/5 rounded-full animate-pulse" />
+            <div className="absolute inset-0 h-full w-full shimmer-border opacity-20" />
             <Icon className={cn(
-              "w-8 h-8 transition-all duration-700",
+              "w-10 h-10 transition-all duration-1000",
               config.color,
               isAnimated && "animate-pulse"
             )} />
           </div>
 
-          <div className="mt-12 text-center space-y-4">
-             <div className="flex flex-col items-center gap-1">
-               <span className="text-[10px] font-mono tracking-[0.5em] text-white/20 uppercase font-bold">Current Protocol</span>
-               <h2 className={cn(
-                 "text-3xl font-heading font-black tracking-tighter transition-all duration-700 uppercase",
-                 config.color,
-                 isAnimated && "animate-glitch-low"
-               )}>
-                 {config.label}
-               </h2>
-             </div>
-             <p className="max-w-[280px] text-white/40 text-xs font-sans italic leading-relaxed">
-               {config.subtext}
-             </p>
+          <div className="mt-16 text-center space-y-6 max-w-sm">
+            <div className="space-y-2">
+              <span className="text-[10px] font-bold tracking-[0.8em] uppercase text-white/20 inline-block pl-2">System Phase</span>
+              <h2 className={cn(
+                "text-4xl sm:text-5xl font-heading tracking-tighter transition-all duration-1000 drop-shadow-2xl",
+                config.color
+              )}>
+                {config.label.split('_').join(' ')}
+              </h2>
+            </div>
+            
+            <p className="text-lg text-white/30 font-serif italic leading-relaxed">
+              {config.subtext}
+            </p>
           </div>
         </div>
 
-        {/* Technical Data Points - Floating around */}
-        <div className="absolute top-1/4 -left-12 hidden lg:flex flex-col gap-6 text-white/10 font-mono text-[8px] tracking-widest uppercase origin-left -rotate-90">
-          <span>Vector: 0xf42e...</span>
-          <span>Sample: High-Fid</span>
-        </div>
-        <div className="absolute top-1/4 -right-12 hidden lg:flex flex-col gap-6 text-white/10 font-mono text-[8px] tracking-widest uppercase origin-right rotate-90 text-right">
-          <span>Lat: 22ms</span>
-          <span>Sync: True</span>
-        </div>
-
-        {/* The Progress Bar - Futuristic "Dashed" line */}
+        {/* Progress Matrix */}
         {progress !== undefined && progress > 0 && !["COMPLETED", "FAILED"].includes(status) && (
-          <div className="mt-16 space-y-3">
-            <div className="flex justify-between text-[8px] font-mono text-white/20 tracking-[0.4em] uppercase">
-              <span>Optimization</span>
-              <span>{Math.round(progress)}%</span>
+          <div className="mt-12 px-10 space-y-4">
+            <div className="flex justify-between items-end">
+              <div className="flex flex-col gap-1">
+                <span className="text-[8px] font-bold text-white/10 uppercase tracking-[0.4em]">Optimization Threshold</span>
+                <p className="text-xl font-heading text-white italic">{Math.round(progress)}<span className="text-sm font-normal text-white/20 ml-1">%</span></p>
+              </div>
+              <div className="w-16 h-[1px] bg-white/10 mb-2" />
             </div>
-            <div className="relative h-1 w-full bg-white/[0.05] rounded-full overflow-hidden border border-white/[0.03]">
+            <div className="relative h-1.5 w-full bg-white/[0.02] rounded-full overflow-hidden border border-white/[0.05]">
               <div
-                className="h-full ig-gradient transition-all duration-1000 ease-out shadow-[0_0_20px_rgba(225,48,108,0.4)]"
+                className="h-full ig-gradient transition-all duration-1000 ease-out shadow-[0_0_30px_rgba(225,48,108,0.5)]"
                 style={{ width: `${Math.min(progress, 100)}%` }}
-              />
+              >
+                 <div className="absolute inset-0 w-full animate-shimmer-border opacity-50" />
+              </div>
             </div>
           </div>
         )}
 
-        {/* Error State */}
+        {/* Breach Alert (Error) */}
         {error && (
-          <div className="mt-12 p-6 bg-destructive/5 border border-destructive/10 rounded-3xl backdrop-blur-xl animate-in fade-in zoom-in duration-500">
-             <div className="flex items-start gap-4 text-destructive">
-               <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
-               <div className="flex flex-col gap-1">
-                 <span className="text-[10px] font-mono font-bold uppercase tracking-widest">Protocol Failed</span>
-                 <p className="text-xs leading-relaxed font-sans opacity-80">{error}</p>
+          <div className="mt-16 p-8 velvet-card border-destructive/20 bg-destructive/[0.02] relative overflow-hidden group/error">
+             <div className="absolute inset-0 shimmer-border opacity-10" />
+             <div className="flex items-start gap-6 text-destructive">
+               <AlertCircle className="w-6 h-6 mt-1 shrink-0" />
+               <div className="space-y-2">
+                 <span className="text-[10px] font-bold uppercase tracking-[0.5em]">Protocol Interruption</span>
+                 <p className="text-lg font-serif italic opacity-70 leading-relaxed text-white/80">{error}</p>
+                 <button 
+                  onClick={() => window.location.reload()}
+                  className="mt-4 text-[10px] font-bold uppercase tracking-[0.3em] py-3 px-6 rounded-full border border-destructive/30 hover:bg-destructive hover:text-white transition-all duration-500"
+                 >
+                   Retry Synchronization
+                 </button>
                </div>
              </div>
           </div>
         )}
 
+        {/* Technical Meta Layout */}
+        <div className="mt-20 pt-8 border-t border-white/[0.03] flex justify-between items-center px-2 opacity-30">
+           <span className="text-[8px] font-mono tracking-[0.5em] uppercase">Core // Sophia.OS</span>
+           <span className="text-[8px] font-mono tracking-[0.5em] uppercase">Lat: 0.002s</span>
+        </div>
       </div>
     </div>
   );
