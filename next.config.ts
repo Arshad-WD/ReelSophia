@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
   /* config options here */
   experimental: {
     optimizePackageImports: ["lucide-react"],
+    turbopack: {},
   },
   images: {
     formats: ["image/avif", "image/webp"],
