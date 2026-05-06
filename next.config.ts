@@ -9,9 +9,9 @@ const withPWA = require("next-pwa")({
 
 const nextConfig: NextConfig = {
   /* config options here */
+  turbopack: {},
   experimental: {
     optimizePackageImports: ["lucide-react"],
-    turbopack: {},
   },
   images: {
     formats: ["image/avif", "image/webp"],
