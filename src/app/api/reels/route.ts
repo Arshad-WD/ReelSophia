@@ -137,8 +137,7 @@ export async function POST(req: NextRequest) {
             },
         });
 
-        // Dispatch processing: ALWAYS use BullMQ queue in production (for Render worker),
-        // NEVER fall back to inline processing in production as Vercel lacks ffmpeg/yt-dlp.
+        // Dispatch processing
         const jobData = {
             reelId: reel.id,
             userId,
@@ -147,29 +146,27 @@ export async function POST(req: NextRequest) {
             aiSettings: (userDb.aiSettings as any) || undefined,
         };
 
+        const forceInline = process.env.USE_INLINE === "true";
         const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "production";
-        console.log(`[API] Deployment Environment: NODE_ENV=${process.env.NODE_ENV}, VERCEL_ENV=${process.env.VERCEL_ENV}. IsProd: ${isProduction} (Deploy v4.1 - NO CACHE)`);
+        console.log(`[API] Env: NODE_ENV=${process.env.NODE_ENV}, USE_INLINE=${forceInline}, IsProd=${isProduction}`);
 
-        if (isProduction || process.env.REDIS_URL) {
-            // Enqueue to BullMQ → picked up by Render worker
+        if (!forceInline && (isProduction || process.env.REDIS_URL)) {
+            // Production: Enqueue to BullMQ → picked up by Render worker
             try {
                 const { addReelJob } = await import("@/lib/queue");
                 await addReelJob(jobData);
                 console.log(`[API] ✅ Job enqueued to BullMQ for ${reel.id}`);
             } catch (queueErr: unknown) {
                 const message = queueErr instanceof Error ? queueErr.message : "Unknown queue error";
-                console.error(`[API] ❌ CRITICAL: Queue enqueue failed:`, message);
-                
-                await updateJobStatusForError(reel.id, `Failed to enqueue job to Render worker. Redis/BullMQ error: ${message}`);
-                
-                return NextResponse.json(
-                    { error: "Failed to connect to processing queue", details: message },
-                    { status: 503 }
-                );
+                console.error(`[API] ❌ Queue enqueue failed — falling back to inline:`, message);
+                // Graceful fallback to inline if queue fails
+                processReelInline(jobData as any).catch((err) => {
+                    console.error(`[API] Inline fallback error for ${reel.id}:`, err instanceof Error ? err.message : err);
+                });
             }
         } else {
-            // Development ONLY: process inline (fire-and-forget)
-            console.log(`[API] Local development detected. Running inline-processor.`);
+            // Local dev / USE_INLINE=true: process inline (fire-and-forget)
+            console.log(`[API] Running inline-processor for ${reel.id}`);
             processReelInline(jobData as any).catch((err) => {
                 const message = err instanceof Error ? err.message : "Unknown processing error";
                 console.error(`[API] Background processing error for ${reel.id}:`, message);

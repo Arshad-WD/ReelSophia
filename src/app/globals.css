@@ -1,297 +1,129 @@
 @import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans), "Inter", sans-serif;
-  --font-heading: var(--font-heading), "Outfit", serif;
-  --font-mono: var(--font-mono), monospace;
+@custom-variant dark (&:where(.dark, .dark *));
 
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
+@theme {
+  --font-heading: "Outfit", sans-serif;
+  --font-sans: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
 
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
-  --radius-xl: 32px;
-}
+  --color-background: #050508;
+  --color-foreground: #ffffff;
 
-:root {
-  --background: oklch(0.04 0.01 290);     
-  --foreground: oklch(0.98 0.01 290);     
+  --color-primary: oklch(0.62 0.26 290);
+  --color-primary-foreground: #ffffff;
 
-  --card: oklch(0.10 0.02 290 / 0.4);    
-  --card-foreground: oklch(0.98 0.01 290);
+  --color-secondary: oklch(0.3 0.1 290);
+  --color-secondary-foreground: #ffffff;
 
-  /* The "Midnight Sunset" Base (IG-inspired) */
-  --primary: oklch(0.65 0.20 30);         /* Warm Vibrant Orange/Red */
-  --primary-foreground: oklch(0.98 0.01 290);
+  --color-muted: oklch(0.2 0.05 290 / 0.5);
+  --color-muted-foreground: oklch(0.7 0.05 290);
 
-  --secondary: oklch(0.14 0.04 290 / 0.8);
-  --secondary-foreground: oklch(0.90 0.02 290);
+  --color-accent: oklch(0.62 0.26 290 / 0.15);
+  --color-accent-foreground: oklch(0.62 0.26 290);
 
-  --muted: oklch(0.12 0.02 290);
-  --muted-foreground: oklch(0.55 0.03 290);
+  --color-destructive: oklch(0.6 0.2 20);
+  --color-destructive-foreground: #ffffff;
 
-  --accent: oklch(0.72 0.18 70);          /* Golden Amber */
-  --ring: oklch(0.65 0.20 30 / 0.4);
+  --color-border: oklch(0.2 0.05 290 / 0.3);
+  --color-input: oklch(0.2 0.05 290 / 0.3);
+  --color-ring: oklch(0.62 0.26 290 / 0.5);
 
-  --radius: 3rem;
-}
-
-/* ── The Instagram Soul (Gradient Utility) ── */
-@utility ig-gradient {
-  background: linear-gradient(45deg, oklch(0.72 0.18 70) 0%, oklch(0.65 0.20 30) 50%, oklch(0.55 0.23 350) 100%);
-}
-
-@utility text-ig-gradient {
-  background: linear-gradient(45deg, oklch(0.72 0.18 70) 0%, oklch(0.65 0.20 30) 50%, oklch(0.55 0.23 350) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-@utility signature-card {
-  @apply bg-card backdrop-blur-xl relative transition-[transform,opacity,border-color,box-shadow] duration-400 ease-[cubic-bezier(0.16,1,0.3,1)];
-  border: 1px solid oklch(1 0 0 / 0.08); 
-  border-radius: 3.5rem; 
-  box-shadow: 
-    0 32px 64px -16px rgba(0, 0, 0, 0.6),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
-  
-  @media (max-width: 768px) {
-    border-radius: 3rem;
-  }
-}
-
-@utility signature-card-hover {
-  @apply signature-card;
-  &:hover {
-    @apply -translate-y-1 scale-[1.01];
-    border-color: var(--color-primary);
-    box-shadow: 
-      0 48px 96px -24px rgba(0, 0, 0, 0.8),
-      0 0 24px oklch(0.65 0.20 30 / 0.15); 
-  }
-}
-
-@utility btn-signature {
-  @apply relative overflow-hidden font-bold px-12 py-5 rounded-full transition-all duration-400 flex items-center justify-center gap-4 text-xs tracking-[0.3em] uppercase ig-gradient;
-  color: white;
-  box-shadow: 0 20px 40px -8px rgba(225, 48, 108, 0.3);
-
-  &:hover:not(:disabled) {
-    @apply -translate-y-1 shadow-2xl scale-[1.02];
-    filter: brightness(1.1);
-  }
-
-  &:active:not(:disabled) {
-    @apply translate-y-0 scale-[0.98];
-  }
-}
-
-@utility glass-card {
-  @apply relative bg-white/[0.04] backdrop-blur-lg transition-[transform,opacity] duration-300;
-  border: 1px solid oklch(1 0 0 / 0.08);
-  border-radius: 2.5rem;
-  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.3);
-}
-
-@utility velvet-card {
-  @apply relative bg-white/[0.04] backdrop-blur-3xl transition-all duration-700;
-  border: 1px solid oklch(1 0 0 / 0.06);
-  border-radius: 2rem;
-  box-shadow: 
-    0 24px 48px -12px rgba(0, 0, 0, 0.5),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-}
-
-/* ── High-End Shimmer/Glow Utilities ── */
-@utility shimmer-border {
-  @apply relative overflow-hidden;
-  &::after {
-    content: "";
-    position: absolute;
-    inset: -100%;
-    background: linear-gradient(
-      45deg,
-      transparent 45%,
-      rgba(255, 255, 255, 0.1) 50%,
-      transparent 55%
-    );
-    animation: shimmer 5s infinite;
-  }
-}
-
-@utility neural-field {
-  background: 
-    radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), oklch(0.65 0.20 30 / 0.15) 0%, transparent 40%),
-    radial-gradient(circle at 80% 20%, oklch(0.72 0.18 70 / 0.1) 0%, transparent 50%);
+  --radius-lg: 1rem;
+  --radius-md: 0.75rem;
+  --radius-sm: 0.5rem;
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
-
   body {
-    @apply bg-background text-foreground relative min-h-screen overflow-x-hidden;
+    @apply bg-background text-foreground selection:bg-primary/30 selection:text-white;
+    font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
-    
-    /* ── Optimized Ethereal Fabric ── */
-    &::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      z-index: -10;
-      background: 
-        radial-gradient(circle at 10% 10%, oklch(0.72 0.18 70 / 0.1) 0%, transparent 40%),
-        radial-gradient(circle at 90% 90%, oklch(0.55 0.23 350 / 0.08) 0%, transparent 45%);
-      filter: blur(80px);
-      animation: fabric-shift 15s ease-in-out infinite alternate;
-      transform: translateZ(0);
-    }
-
-    /* ── Animated Noise Overlay ── */
-    &::after {
-      content: "";
-      position: fixed;
-      inset: -200%;
-      z-index: 50;
-      opacity: 0.04;
-      pointer-events: none;
-      background-image: url('https://grainy-gradients.vercel.app/noise.svg');
-      animation: noise-move 1s steps(2) infinite;
-      mix-blend-mode: overlay;
-    }
-  }
-
-  h1, h2, h3, h4 {
-    @apply font-heading tracking-tight text-balance font-extrabold;
   }
 }
 
-@keyframes shimmer {
-  0% { transform: translateX(-100%) translateY(-100%) rotate(-45deg); }
-  100% { transform: translateX(100%) translateY(100%) rotate(-45deg); }
+@utility brand-gradient {
+  background: linear-gradient(135deg, oklch(0.62 0.26 290), oklch(0.45 0.2 280));
 }
 
-@keyframes noise-move {
-  0% { transform: translate(0, 0); }
-  10% { transform: translate(-5%, -5%); }
-  20% { transform: translate(-10%, 5%); }
-  30% { transform: translate(5%, -10%); }
-  40% { transform: translate(-5%, 15%); }
-  50% { transform: translate(-10%, 5%); }
-  60% { transform: translate(15%, 0); }
-  70% { transform: translate(0, 10%); }
-  80% { transform: translate(-15%, 0); }
-  90% { transform: translate(10%, 5%); }
-  100% { transform: translate(5%, 0); }
+@utility text-brand-gradient {
+  @apply bg-clip-text text-transparent brand-gradient;
 }
 
-@keyframes parallax-hero {
-  0% { transform: translateY(0) scale(1.05); }
-  100% { transform: translateY(-30px) scale(1); }
+@utility btn-primary {
+  @apply inline-flex items-center justify-center px-8 py-4 rounded-2xl brand-gradient text-white font-bold uppercase tracking-[0.2em] text-[10px] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(var(--primary-rgb),0.3)] active:scale-95 disabled:opacity-50;
 }
 
-@keyframes fabric-shift {
-  0% { transform: scale(1) translate(0, 0); }
-  100% { transform: scale(1.03) translate(1%, 1%); }
+@utility btn-signature {
+  @apply inline-flex items-center justify-center px-8 py-4 rounded-2xl bg-white/[0.05] border border-white/10 text-white font-bold uppercase tracking-[0.2em] text-[10px] transition-all duration-300 hover:bg-white/[0.08] hover:border-white/20 active:scale-95;
 }
 
-/* Animations - Snappy Physics */
-@keyframes page-entry { 
-  from { opacity: 0; transform: translateY(12px) scale(0.99); } 
-  to { opacity: 1; transform: translateY(0) scale(1); } 
-}
-.animate-page-entry { 
-  animation: page-entry 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+@utility panel {
+  @apply rounded-[2rem] bg-white/[0.02] border border-white/[0.06] backdrop-blur-3xl;
 }
 
-@keyframes breath-glow {
-  0%, 100% { opacity: 0.3; filter: blur(100px) scale(1); }
-  50% { opacity: 0.6; filter: blur(120px) scale(1.05); }
-}
-.animate-breath-glow {
-  animation: breath-glow 8s ease-in-out infinite;
+@utility glass {
+  @apply backdrop-blur-xl bg-white/[0.03] border border-white/[0.08];
 }
 
-@keyframes breath-slow {
-  0%, 100% { transform: translate(-50%, -10%) scale(1); opacity: 0.05; }
-  50% { transform: translate(-50%, -12%) scale(1.1); opacity: 0.1; }
-}
-.animate-breath-slow {
-  animation: breath-slow 15s ease-in-out infinite;
+@utility glass-dark {
+  @apply backdrop-blur-2xl bg-black/40 border border-white/[0.05];
 }
 
-@keyframes pulse-ring {
-  0% { transform: scale(0.8); opacity: 0.5; }
-  100% { transform: scale(1.5); opacity: 0; }
-}
-.animate-pulse-ring {
-  animation: pulse-ring 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+@utility velvet-card {
+  @apply rounded-[2.5rem] bg-[#0A0A0F] border border-white/[0.06] transition-all duration-500 shadow-2xl;
 }
 
-@keyframes neural-float {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-10px) scale(1.02); }
-}
-.animate-neural-float {
-  animation: neural-float 6s ease-in-out infinite;
+@utility responsive-container {
+  @apply w-full max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16;
 }
 
-@keyframes glitch-text {
-  0%, 100% { transform: translate(0); opacity: 1; }
-  2%, 64% { transform: translate(1px, -1px); opacity: 0.9; }
-  4%, 62% { transform: translate(-1px, 1px); opacity: 0.8; }
-  6% { transform: translate(0); opacity: 1; }
-}
-.animate-glitch-low {
-  animation: glitch-text 4s linear infinite;
-}
 
+/* Animations */
 @keyframes reveal-up {
-  from { opacity: 0; transform: translateY(30px); filter: blur(10px); }
-  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+  from { opacity: 0; transform: translateY(30px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(500%); }
+}
+
 .reveal-up {
-  opacity: 0;
   animation: reveal-up 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
-.stagger-1 { animation-delay: 100ms; }
-.stagger-2 { animation-delay: 200ms; }
-.stagger-3 { animation-delay: 300ms; }
-.stagger-4 { animation-delay: 400ms; }
-.stagger-5 { animation-delay: 500ms; }
 
-.spotlight-hover::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(600px circle at var(--mouse-x, 0) var(--mouse-y, 0), rgba(225, 48, 108, 0.06), transparent 30%);
-  opacity: 0;
-  transition: opacity 0.3s;
-  z-index: 1;
-  pointer-events: none;
+.animate-scanline {
+  animation: scanline 4s linear infinite;
 }
-.spotlight-hover:hover::before { opacity: 1; }
-:before { opacity: 1; }
+
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+}
+
+/* Base UI Overrides for Premium Feel */
+[data-slot="dropdown-menu-content"], 
+[data-slot="popover-content"] {
+  @apply glass-dark rounded-2xl p-2 shadow-2xl border-white/10;
+  animation: reveal-up 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+

@@ -3,152 +3,183 @@
 import { useAuth } from "@/lib/auth-context";
 import { ApiKeySettings } from "@/components/api-key-settings";
 import Image from "next/image";
-import { Package, User, LogOut, ChevronRight, Shield, Database } from "lucide-react";
+import { User, LogOut, ChevronRight, Shield, Database, Settings as SettingsIcon, Activity, Cpu, Lock, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function SettingsPage() {
   const { user, logout } = useAuth();
 
   return (
-    <div className="min-h-screen bg-background text-white relative overflow-hidden neural-field">
-      {/* ── Ultra-Premium Background Architecture ── */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div 
-          className="absolute inset-0 opacity-[0.03] mix-blend-screen scale-[1.1]"
-          style={{ 
-            backgroundImage: "url('/images/neural-bg.png')",
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        />
-        <div className="absolute top-0 right-0 w-[1000px] h-[1000px] bg-primary/5 blur-[220px] rounded-full animate-breath-slow" />
-        <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-primary/2 blur-[200px] rounded-full opacity-30" />
-      </div>
+    <div className="min-h-screen pb-40">
+      
+      {/* Dynamic Grid Background */}
+      <div className="fixed inset-0 pointer-events-none z-0 opacity-[0.03]" 
+           style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)', backgroundSize: '40px 40px' }} />
 
-      <div className="relative z-10 pt-32 lg:pt-48 pb-40 px-6 lg:px-12 max-w-[1400px] mx-auto">
-        {/* Editorial Header */}
-        <header className="mb-24 reveal-up">
-           <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full border border-white/[0.08] bg-white/[0.02] backdrop-blur-xl mb-12 group hover:border-primary/40 transition-all duration-700">
-              <Shield className="w-4 h-4 text-primary animate-pulse" />
-              <span className="text-[10px] font-bold tracking-[0.6em] uppercase text-white/40 group-hover:text-white transition-colors">Identity Architecture</span>
-            </div>
-            <h1 className="text-6xl lg:text-9xl font-heading tracking-tighter text-white drop-shadow-3xl leading-[0.9] mb-8">
-              Vault <br />
-              <span className="text-ig-gradient italic font-normal">Configuration.</span>
-            </h1>
-            <p className="text-xl text-white/20 font-serif italic max-w-2xl leading-relaxed">
-              Managing the secure gateways and neural connections of your digital intelligence.
-            </p>
-        </header>
+      {/* Header Protocol */}
+      <header className="max-w-4xl mx-auto mb-20 text-center reveal-up">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-xl mb-10">
+          <SettingsIcon className="w-3.5 h-3.5 text-primary" />
+          <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/40">Terminal Preferences</span>
+        </div>
+        <h1 className="text-5xl lg:text-8xl font-heading tracking-tight text-white mb-8">
+          System <span className="text-brand-gradient">Control</span>
+        </h1>
+        <p className="text-base lg:text-xl text-white/30 max-w-xl mx-auto leading-relaxed text-balance">
+          Configure your technical identity, intelligence gateways, and distributed infrastructure parameters.
+        </p>
+      </header>
 
-        <div className="space-y-32">
-          {/* Identity Section */}
-          <section className="reveal-up stagger-1">
-            <div className="flex items-center gap-6 mb-16">
-               <h2 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.8em]">Personal Identity</h2>
-               <div className="h-[1px] flex-1 bg-gradient-to-r from-white/[0.05] to-transparent" />
+      <div className="max-w-5xl mx-auto space-y-16 lg:space-y-24">
+        
+        {/* Digital Identity Module */}
+        <section className="reveal-up stagger-1">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <User className="w-4 h-4 text-primary" />
             </div>
+            <h2 className="text-xs font-bold text-white/30 uppercase tracking-[0.4em]">Identity Module</h2>
+          </div>
+          
+          <div className="relative group overflow-hidden rounded-[2.5rem] bg-white/[0.02] border border-white/[0.06] p-8 lg:p-14 transition-all hover:bg-white/[0.03] hover:border-white/10">
+            {/* Scanline Effect */}
+            <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-gradient-to-b from-transparent via-white to-transparent h-20 w-full animate-scanline" />
             
-            <div className="velvet-card p-10 lg:p-16 relative overflow-hidden group">
-              <div className="absolute inset-0 shimmer-border opacity-5 pointer-events-none" />
-              <div className="flex flex-col lg:flex-row items-center lg:items-start justify-between gap-16">
-                <div className="flex flex-col lg:flex-row items-center lg:items-start gap-12">
-                  <div className="relative">
-                    <div className="absolute -inset-4 rounded-full bg-primary/20 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-                    <div className="w-32 lg:w-48 h-32 lg:h-48 rounded-full bg-white/[0.02] border-[6px] border-white/5 flex items-center justify-center overflow-hidden shadow-3xl relative z-10 group-hover:scale-105 transition-transform duration-700">
-                      {user?.imageUrl ? (
-                        <Image 
-                          src={user.imageUrl} 
-                          alt="Profile" 
-                          width={192} 
-                          height={192} 
-                          className="w-full h-full object-cover grayscale-[0.2] hover:grayscale-0 transition-all duration-700" 
-                        />
-                      ) : (
-                        <User className="w-16 h-16 text-white/10" />
-                      )}
-                    </div>
+            <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
+              <div className="relative">
+                <div className="w-28 h-28 lg:w-40 lg:h-40 rounded-3xl bg-[#0A0A0F] border-2 border-white/5 overflow-hidden flex items-center justify-center p-1 shadow-2xl">
+                  <div className="w-full h-full rounded-2xl overflow-hidden bg-white/[0.02] flex items-center justify-center relative">
+                    {user?.imageUrl ? (
+                      <Image
+                        src={user.imageUrl}
+                        alt="Profile"
+                        width={160}
+                        height={160}
+                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                      />
+                    ) : (
+                      <User className="w-12 h-12 text-white/5" />
+                    )}
+                    {/* Visual Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent opacity-40" />
                   </div>
-
-                  <div className="text-center lg:text-left space-y-4 pt-4">
-                    <h3 className="text-4xl lg:text-6xl font-heading text-white tracking-tighter drop-shadow-lg">{user?.name || "Neural Entity"}</h3>
-                    <p className="text-[12px] lg:text-sm text-white/20 font-mono tracking-[0.4em] uppercase">{user?.email}</p>
-                    
-                    <div className="flex flex-wrap justify-center lg:justify-start gap-4 pt-6">
-                      <div className="px-6 py-2 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-bold text-primary uppercase tracking-[0.3em] shadow-[0_0_20px_rgba(225,48,108,0.2)]">Level 4 Clearance</div>
-                      <div className="px-6 py-2 rounded-full bg-white/[0.03] border border-white/10 text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">Signature Series</div>
-                    </div>
-                  </div>
+                </div>
+                {/* Status Indicator */}
+                <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-[#050508] border border-white/10 flex items-center justify-center">
+                  <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
+                </div>
+              </div>
+              
+              <div className="flex-1 text-center md:text-left space-y-4">
+                <div>
+                  <h3 className="text-3xl lg:text-4xl font-heading text-white mb-2">{user?.name || "Unclassified User"}</h3>
+                  <p className="text-sm text-primary font-mono tracking-tighter opacity-60">{user?.email}</p>
                 </div>
                 
-                <button 
-                  onClick={() => logout()}
-                  className="group relative py-6 px-12 rounded-[2rem] bg-white text-background text-[11px] font-bold uppercase tracking-[0.5em] transition-all duration-700 hover:bg-destructive hover:text-white hover:tracking-[0.6em] active:scale-95 shadow-2xl overflow-hidden self-center"
-                >
-                  <div className="absolute inset-0 shimmer-border opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <span className="relative z-10 flex items-center gap-4">
-                    <LogOut className="w-4 h-4" />
-                    Terminate Session
-                  </span>
-                </button>
-              </div>
-            </div>
-          </section>
+                <div className="flex flex-wrap justify-center md:justify-start gap-3">
+                  <div className="px-4 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-[10px] font-bold text-primary uppercase tracking-widest">Priority Node Access</div>
+                  <div className="px-4 py-1.5 rounded-lg bg-white/[0.04] border border-white/10 text-[10px] font-bold text-white/30 uppercase tracking-widest">Verified DNA</div>
+                </div>
 
-          {/* Intelligence Section */}
-          <section className="reveal-up stagger-2">
-            <div className="flex items-center gap-6 mb-16">
-               <h2 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.8em]">Intelligence Bridges</h2>
-               <div className="h-[1px] flex-1 bg-gradient-to-r from-white/[0.05] to-transparent" />
-            </div>
-            <div className="relative group p-1 rounded-[3.5rem] bg-gradient-to-br from-white/5 to-transparent shadow-3xl">
-              <div className="absolute inset-0 bg-primary/5 blur-[100px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000 -z-10" />
-              <ApiKeySettings initialSettings={user?.aiSettings} />
-            </div>
-          </section>
-
-          {/* Infrastructure Section */}
-          <section className="reveal-up stagger-3 pb-40">
-            <div className="flex items-center gap-6 mb-16">
-               <h2 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.8em]">Infrastructure Core</h2>
-               <div className="h-[1px] flex-1 bg-gradient-to-r from-white/[0.05] to-transparent" />
-            </div>
-          
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-              <div className="velvet-card p-12 border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] transition-all duration-700 group cursor-pointer relative overflow-hidden">
-                <div className="absolute inset-0 shimmer-border opacity-5 pointer-events-none" />
-                <div className="flex items-center justify-between mb-8">
-                  <div className="w-16 h-16 rounded-[2rem] bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-700">
-                    <Shield className="w-7 h-7" />
+                <div className="pt-6 border-t border-white/5 flex flex-wrap justify-center md:justify-start gap-8">
+                  <div>
+                    <p className="text-[10px] font-bold text-white/10 uppercase tracking-widest mb-1">Knowledge Capacity</p>
+                    <p className="text-sm font-mono text-white/40">Unlimited</p>
                   </div>
-                  <div className="w-12 h-12 rounded-full border border-white/5 flex items-center justify-center text-white/10 group-hover:text-primary transition-colors">
-                    <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                  <div>
+                    <p className="text-[10px] font-bold text-white/10 uppercase tracking-widest mb-1">Last Sync</p>
+                    <p className="text-sm font-mono text-white/40">T-00:14:22</p>
                   </div>
                 </div>
-                <h4 className="text-2xl font-heading text-white tracking-tight mb-2">Neural Link Sync</h4>
-                <p className="text-[10px] text-white/20 uppercase tracking-[0.5em] font-mono italic">Architecture: Encrypted Quantum Tunnel</p>
               </div>
 
-              <div className="velvet-card p-12 border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] transition-all duration-700 group cursor-pointer relative overflow-hidden">
-                <div className="absolute inset-0 shimmer-border opacity-5 pointer-events-none" />
-                <div className="flex items-center justify-between mb-8">
-                  <div className="w-16 h-16 rounded-[2rem] bg-white/[0.03] border border-white/10 flex items-center justify-center text-white/20 group-hover:scale-110 transition-transform duration-700 group-hover:text-primary">
-                    <Database className="w-7 h-7" />
+              <button
+                onClick={() => logout()}
+                className="group px-8 py-4 rounded-2xl border border-destructive/20 bg-destructive/5 text-destructive hover:bg-destructive hover:text-white transition-all duration-300 text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-3 shrink-0"
+              >
+                <LogOut className="w-4 h-4" />
+                Purge Session
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Intelligence Gateways (API) */}
+        <section className="reveal-up stagger-2">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+              <Cpu className="w-4 h-4 text-white/40" />
+            </div>
+            <h2 className="text-xs font-bold text-white/30 uppercase tracking-[0.4em]">Intelligence Gateways</h2>
+          </div>
+          <div className="rounded-[2.5rem] bg-white/[0.015] border border-white/[0.06] p-2 lg:p-4 overflow-hidden">
+             <ApiKeySettings initialSettings={user?.aiSettings} />
+          </div>
+        </section>
+
+        {/* Infrastructure Status */}
+        <section className="reveal-up stagger-3">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+              <Activity className="w-4 h-4 text-white/40" />
+            </div>
+            <h2 className="text-xs font-bold text-white/30 uppercase tracking-[0.4em]">Infrastructure Status</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="group rounded-[2rem] bg-white/[0.02] border border-white/[0.06] p-8 hover:bg-white/[0.04] hover:border-primary/20 transition-all cursor-pointer overflow-hidden">
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center text-white/20 group-hover:text-primary transition-all">
+                    <Shield className="w-6 h-6" />
                   </div>
-                  <div className="w-12 h-12 rounded-full border border-white/5 flex items-center justify-center text-white/10 group-hover:text-primary transition-colors">
-                    <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                  <div>
+                    <h4 className="text-base font-bold text-white group-hover:text-primary transition-colors">Security Protocol</h4>
+                    <p className="text-[10px] text-white/20 uppercase tracking-[0.2em] mt-1 font-mono">TLS 1.3 End-to-End</p>
                   </div>
                 </div>
-                <h4 className="text-2xl font-heading text-white tracking-tight mb-2">Synthetic Memory</h4>
-                <p className="text-[10px] text-white/20 uppercase tracking-[0.5em] font-mono italic">Provider: Cerebro-X Cloud Network</p>
+                <div className="h-2 w-12 bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-500 w-full" />
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center text-[10px] font-bold text-white/10 uppercase tracking-widest">
+                  <span>Encryption Level</span>
+                  <span className="text-emerald-500/50">Optimal</span>
+                </div>
+                <div className="h-1 w-full bg-white/5 rounded-full">
+                  <div className="h-full bg-primary/40 w-[95%] rounded-full" />
+                </div>
               </div>
             </div>
-          </section>
-        </div>
+
+            <div className="group rounded-[2rem] bg-white/[0.02] border border-white/[0.06] p-8 hover:bg-white/[0.04] hover:border-primary/20 transition-all cursor-pointer overflow-hidden">
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center text-white/20 group-hover:text-primary transition-all">
+                    <Database className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-bold text-white group-hover:text-primary transition-colors">Distributed Storage</h4>
+                    <p className="text-[10px] text-white/20 uppercase tracking-[0.2em] mt-1 font-mono">Global Mesh Active</p>
+                  </div>
+                </div>
+                <Activity className="w-5 h-5 text-emerald-500/40 animate-pulse" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 text-center">
+                  <p className="text-[10px] font-bold text-white/10 uppercase tracking-widest mb-1">Latency</p>
+                  <p className="text-sm font-mono text-emerald-500/70">14ms</p>
+                </div>
+                <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 text-center">
+                  <p className="text-[10px] font-bold text-white/10 uppercase tracking-widest mb-1">Redundancy</p>
+                  <p className="text-sm font-mono text-emerald-500/70">3X</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
       </div>
-      <footer className="fixed bottom-10 left-10 opacity-10 pointer-events-none">
-        <p className="font-mono text-[8px] uppercase tracking-[1.5em] text-white">Sophia OS // Vault Master Redesign v9.0</p>
-      </footer>
     </div>
   );
 }

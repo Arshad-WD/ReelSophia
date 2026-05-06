@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { NoteCard } from "@/components/note-card";
-import { Search as SearchIcon, X, Database, Sparkles } from "lucide-react";
+import { Search as SearchIcon, X, Database, Sparkles, Command, Activity, Zap, Cpu } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Reel {
@@ -13,6 +13,7 @@ interface Reel {
   platform: string;
   createdAt: string;
   folder: { id: string; name: string; icon: string | null } | null;
+  job: { status: string; progress: number; error: string | null } | null;
 }
 
 export default function SearchPage() {
@@ -52,128 +53,131 @@ export default function SearchPage() {
   }, [query, handleSearch]);
 
   return (
-    <div className="min-h-screen bg-background text-white relative overflow-hidden neural-field">
-      {/* ── Ultra-Premium Background Architecture ── */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div 
-          className="absolute inset-0 opacity-[0.03] mix-blend-screen scale-[1.1]"
-          style={{ 
-            backgroundImage: "url('/images/neural-bg.png')",
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        />
-        <div className="absolute top-0 left-0 w-[1000px] h-[1000px] bg-primary/5 blur-[200px] rounded-full animate-breath-slow" />
-      </div>
+    <div className="min-h-screen pb-40">
+      
+      {/* Dynamic Grid Background */}
+      <div className="fixed inset-0 pointer-events-none z-0 opacity-[0.03]" 
+           style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)', backgroundSize: '40px 40px' }} />
 
-      <div className="relative z-10 pt-32 lg:pt-48 pb-40 px-6 lg:px-12 max-w-[1600px] mx-auto">
-        {/* Editorial Header */}
-        <header className="mb-20 reveal-up">
-           <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full border border-white/[0.08] bg-white/[0.02] backdrop-blur-xl mb-8 group hover:border-primary/40 transition-all duration-700">
-              <SearchIcon className="w-4 h-4 text-primary animate-pulse" />
-              <span className="text-[10px] font-bold tracking-[0.6em] uppercase text-white/40 group-hover:text-white transition-colors">Neural Discovery</span>
-            </div>
-            <h1 className="text-6xl lg:text-9xl font-heading tracking-tighter text-white drop-shadow-3xl leading-[0.9] mb-8">
-              Intelligence <br />
-              <span className="text-ig-gradient italic font-normal">Synthesis.</span>
-            </h1>
-        </header>
+      {/* Header Protocol */}
+      <header className="max-w-4xl mx-auto mb-16 lg:mb-24 text-center reveal-up">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-primary/5 backdrop-blur-xl mb-10">
+          <Command className="w-3.5 h-3.5 text-primary" />
+          <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-primary/80">Query Protocol active</span>
+        </div>
+        <h1 className="text-5xl lg:text-8xl font-heading tracking-tight text-white mb-8 leading-[1] text-balance">
+          Query <span className="text-brand-gradient">Archives</span>
+        </h1>
+        <p className="text-base lg:text-xl text-white/30 max-w-2xl mx-auto leading-relaxed text-balance">
+          Access your distributed knowledge network. Query by concept, tool, or technical entity for instant retrieval.
+        </p>
+      </header>
 
-        {/* High-End Search Interface */}
-        <div className="mb-32 reveal-up stagger-1">
-          <div className="relative group max-w-4xl">
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-primary/5 to-transparent rounded-[2.5rem] blur-2xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-1000" />
-            <div className="relative">
-              <SearchIcon className="absolute left-10 top-1/2 -translate-y-1/2 w-8 h-8 text-white/10 group-focus-within:text-primary transition-all duration-700 z-10" />
+      {/* ── Query Console ── */}
+      <div className="max-w-4xl mx-auto mb-20 lg:mb-32 reveal-up stagger-1">
+        <div className="relative group">
+          {/* Immersive Focus Glow */}
+          <div className="absolute inset-x-0 -top-10 -bottom-10 bg-primary/10 blur-[100px] opacity-0 group-focus-within:opacity-100 transition-opacity duration-1000" />
+          
+          <div className="relative overflow-hidden rounded-[2.5rem] bg-white/[0.02] border border-white/[0.08] p-2 transition-all duration-500 group-focus-within:border-primary/40 group-focus-within:bg-white/[0.04]">
+            <div className="relative flex items-center">
+              <div className="absolute left-6 w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center group-focus-within:border-primary/20 transition-all">
+                <SearchIcon className="w-6 h-6 text-white/20 group-focus-within:text-primary transition-colors" />
+              </div>
               <input
                 type="search"
-                placeholder="Query the Archive..."
+                placeholder="Target entity, technique, or architecture…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full h-24 lg:h-32 velvet-card bg-white/[0.02] border-white/5 focus:border-primary/40 transition-all pl-24 pr-24 text-2xl lg:text-4xl font-serif italic text-white placeholder:text-white/5 outline-none rounded-[2.5rem] shadow-3xl"
+                className="w-full h-20 bg-transparent rounded-[1.5rem] pl-22 pr-16 text-xl lg:text-2xl text-white outline-none transition-all placeholder:text-white/5 font-mono"
                 autoFocus
               />
               {query && (
                 <button
                   onClick={() => { setQuery(""); setResults([]); setSearched(false); }}
-                  className="absolute right-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-white/[0.05] hover:bg-destructive/20 flex items-center justify-center text-white/30 hover:text-white transition-all z-10 group/clear"
+                  className="absolute right-6 p-3 rounded-xl bg-white/5 hover:bg-destructive/10 text-white/20 hover:text-destructive transition-all group/close"
                 >
-                  <X className="w-6 h-6 group-hover:rotate-90 transition-transform duration-500" />
+                  <X className="w-5 h-5 group-hover/close:rotate-90 transition-transform" />
                 </button>
               )}
             </div>
+            {/* Structural Scanline */}
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity" />
+          </div>
+          
+          {/* Quick Stats Overlay */}
+          <div className="mt-6 flex items-center justify-center gap-8 opacity-20 group-focus-within:opacity-60 transition-opacity">
+            <div className="flex items-center gap-2">
+              <Zap className="w-3 h-3 text-primary" />
+              <span className="text-[9px] font-bold uppercase tracking-widest text-white">Low Latency</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Cpu className="w-3 h-3 text-primary" />
+              <span className="text-[9px] font-bold uppercase tracking-widest text-white">Full-Text Indexing</span>
+            </div>
           </div>
         </div>
-
-        {/* Results Architecture */}
-        <div className="space-y-20">
-          {loading && (
-            <div className="flex flex-col items-center justify-center py-40 reveal-up">
-              <div className="w-24 h-[2px] bg-white/[0.05] relative overflow-hidden rounded-full mb-8">
-                <div className="absolute inset-0 bg-primary animate-shimmer" style={{ backgroundImage: "linear-gradient(90deg, transparent 0%, var(--primary) 50%, transparent 100%)" }} />
-              </div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.8em] text-primary animate-pulse">Scanning Neural Paths</p>
-            </div>
-          )}
-
-          {!loading && searched && results.length === 0 && (
-            <div className="velvet-card p-32 text-center relative overflow-hidden group reveal-up">
-              <div className="absolute inset-0 shimmer-border opacity-10 pointer-events-none" />
-              <SearchIcon className="w-20 h-20 text-white/5 mx-auto mb-10 animate-float" />
-              <h3 className="text-3xl font-heading mb-4 text-white tracking-tight">Zero Matches Found</h3>
-              <p className="text-lg text-white/20 font-serif italic max-w-md mx-auto">
-                The term &quot;{query}&quot; has no archival footprint in your current sector.
-              </p>
-            </div>
-          )}
-
-          {!loading && results.length > 0 && (
-            <section className="reveal-up">
-              <div className="flex items-center gap-8 mb-16">
-                 <h2 className="text-[10px] font-bold text-white/20 uppercase tracking-[0.8em]">
-                   {results.length} Identity Match{results.length !== 1 ? "es" : ""}
-                 </h2>
-                 <div className="h-[1px] flex-1 bg-gradient-to-r from-white/[0.05] to-transparent" />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
-                {results.map((reel) => (
-                  <NoteCard
-                    key={reel.id}
-                    id={reel.id}
-                    title={reel.title}
-                    summary={reel.summary}
-                    status={reel.status}
-                    platform={reel.platform}
-                    createdAt={new Date(reel.createdAt)}
-                    folderName={reel.folder?.name}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {!searched && !loading && (
-            <div className="py-32 text-center reveal-up">
-              <Database className="w-24 h-24 text-white/[0.03] mx-auto mb-12 animate-float filter blur-[1px]" />
-              <div className="space-y-6 max-w-2xl mx-auto">
-                 <p className="text-2xl font-serif italic text-white/20 leading-relaxed">
-                   Enter archival coordinates or keywords to synthesize insights from your deep discovery network.
-                 </p>
-                 <div className="flex items-center justify-center gap-4 text-[10px] font-bold uppercase tracking-[0.5em] text-white/5">
-                    <span>Transcripts</span>
-                    <div className="w-1 h-1 rounded-full bg-white/5" />
-                    <span>Summaries</span>
-                    <div className="w-1 h-1 rounded-full bg-white/5" />
-                    <span>Metatags</span>
-                 </div>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
-      <footer className="fixed bottom-10 left-10 opacity-10 pointer-events-none">
-        <p className="font-mono text-[8px] uppercase tracking-[1.5em] text-white">Sophia OS // Search Terminal v4.0</p>
-      </footer>
+
+      {/* ── Result Ledger ── */}
+      <div className="w-full">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-32 reveal-up">
+            <div className="relative mb-12">
+               <div className="w-20 h-20 rounded-full border-4 border-primary/10 border-t-primary animate-spin" />
+               <Activity className="absolute inset-0 m-auto w-6 h-6 text-primary animate-pulse" />
+            </div>
+            <h3 className="text-xs font-bold tracking-[0.5em] uppercase text-primary animate-pulse">Scanning Archive Sectors…</h3>
+          </div>
+        ) : searched && results.length === 0 ? (
+          <div className="relative py-32 rounded-[3rem] border border-dashed border-white/5 bg-white/[0.01] overflow-hidden reveal-up">
+            <div className="absolute inset-0 pointer-events-none opacity-[0.02] bg-gradient-to-b from-transparent via-white to-transparent h-40 animate-scanline" />
+            <div className="relative z-10 text-center space-y-6">
+              <div className="w-20 h-20 rounded-[2rem] bg-white/[0.02] border border-white/5 flex items-center justify-center mx-auto mb-4">
+                <Database className="w-8 h-8 text-white/10" />
+              </div>
+              <div>
+                <h3 className="text-3xl font-heading text-white mb-2">Zero Matches Identified</h3>
+                <p className="text-sm text-white/20 uppercase tracking-widest font-mono">Status: No results for query sequence</p>
+              </div>
+            </div>
+          </div>
+        ) : results.length > 0 ? (
+          <div className="reveal-up">
+            <div className="flex items-center gap-6 mb-12">
+              <div className="px-4 py-1.5 rounded-lg bg-primary/10 border border-primary/20">
+                <span className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">
+                  {results.length} Entities Located
+                </span>
+              </div>
+              <div className="h-px flex-1 bg-gradient-to-r from-white/[0.08] to-transparent" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              {results.map((reel) => (
+                <NoteCard
+                  key={reel.id}
+                  id={reel.id}
+                  title={reel.title}
+                  summary={reel.summary}
+                  status={reel.status}
+                  platform={reel.platform}
+                  createdAt={new Date(reel.createdAt)}
+                  folderName={reel.folder?.name}
+                  jobProgress={reel.job?.progress}
+                  jobError={reel.job?.error}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="py-32 text-center reveal-up opacity-40">
+            <Sparkles className="w-16 h-16 text-white/5 mx-auto mb-10 animate-pulse" />
+            <p className="text-2xl text-white/20 italic text-balance font-heading font-light max-w-xl mx-auto">
+              Awaiting query sequence. Initiate a search to retrieve synthesized intelligence from your private library.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
